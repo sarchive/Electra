@@ -4,9 +4,6 @@ import java.nio.ByteBuffer;
 
 import net.electra.math.ISAACRandomSequencer;
 
-// we have support for the isaac random number generator but we don't really take advantage of it in the server implementation.
-// this has to do with me disabling isaac in the client, just to not complicate things while developing from scratch.
-// all you need to do is assign sequencer to a new instance of isaacrandomsequencer and it will begin working in the server.
 public final class DataBuffer
 {
 	private ISAACRandomSequencer sequencer;
