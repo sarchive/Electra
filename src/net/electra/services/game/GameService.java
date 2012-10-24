@@ -10,8 +10,6 @@ import net.electra.services.game.entities.players.Player;
 import net.electra.services.game.events.PlayerTickEvent;
 import net.electra.services.login.PotentialPlayer;
 
-// note that gameservice doesn't implement networkservice, we don't want it to be available to the outside world
-// i don't really want to mess around anymore with the current implementation either, so this is how it will be lol.
 public class GameService extends NetworkService<Player, PotentialPlayer>
 {
 	private final HashMap<String, Integer> usernames = new HashMap<String, Integer>(); // using hashmaps to match usernames to players is much faster than iterating through every player
