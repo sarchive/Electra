@@ -36,7 +36,7 @@ public class Server
 {
 	private final HashMap<Integer, Service<?>> services = new HashMap<Integer, Service<?>>();
 	private Service<?>[] serviceCache = new Service<?>[0];
-    private final ServerSocketChannel serverChannel;
+	private final ServerSocketChannel serverChannel;
 	private final EventResolver eventResolver;
 	private final EventManager eventManager;
 	private final Selector selector;
@@ -47,7 +47,7 @@ public class Server
 		this.eventResolver = eventResolver;
 		this.eventManager = eventManager;
 		this.selector = Selector.open(); // magically throwing ioexceptions
-        this.serverChannel = ServerSocketChannel.open();
+		this.serverChannel = ServerSocketChannel.open();
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -65,7 +65,7 @@ public class Server
 			EventResolver eventResolver = new EventResolver((List<Map<String, Object>>)new Yaml().load(new String(allData)));
 			EventManager eventManager = new EventManager((List<Map<String, Object>>)new Yaml().load(new FileInputStream(new File("./handlers.yml"))));
 			Server server = new Server(eventResolver, eventManager);
-	        server.register(Service.LOGIN, new LoginService(server));
+			server.register(Service.LOGIN, new LoginService(server));
 			server.register(Service.GAME, new GameService(server));
 			server.run(); // blocks
 		}
@@ -79,29 +79,29 @@ public class Server
 	
 	public void run() throws InterruptedException, IOException, URISyntaxException
 	{
-        Runtime runtime = Runtime.getRuntime();
+		Runtime runtime = Runtime.getRuntime();
 		System.out.println(Settings.SERVER_NAME + " ----------------------------------------------");
 		System.out.println("Server started:  " + new Date());
-		System.out.println("Build date:      " + new Date(new File(getClass().getClassLoader().getResource(getClass().getCanonicalName().replace('.', '/') + ".class").toURI()).lastModified()));
+		System.out.println("Build date:	  " + new Date(new File(getClass().getClassLoader().getResource(getClass().getCanonicalName().replace('.', '/') + ".class").toURI()).lastModified()));
 		System.out.println("Client version:  " + Settings.MINIMUM_CLIENT_VERSION);
 		System.out.println("Server version:  " + Settings.SERVER_VERSION);
 		System.out.println("---------------------------------------------- " + Settings.SERVER_NAME);
 		
 		InetSocketAddress address = new InetSocketAddress(Settings.ADDRESS, Settings.PORT);
 		System.out.println("Attempting to bind to " + address);
-        serverChannel.configureBlocking(false);
-        serverChannel.socket().bind(address);
-        serverChannel.register(selector, SelectionKey.OP_ACCEPT);
-        System.out.println("Listening on " + serverChannel.getLocalAddress());
-        System.out.println("Cycling server at a frequency of " + Settings.CYCLE_RATE + "ms");
-        
-        long sleepTime = 0;
-        long totalTime = 0;
-        long interTime = 0;
-        long totalCycles = 0;
-        long interCycles = 0;
-        Timer executionTimer = new Timer();
-        
+		serverChannel.configureBlocking(false);
+		serverChannel.socket().bind(address);
+		serverChannel.register(selector, SelectionKey.OP_ACCEPT);
+		System.out.println("Listening on " + serverChannel.getLocalAddress());
+		System.out.println("Cycling server at a frequency of " + Settings.CYCLE_RATE + "ms");
+		
+		long sleepTime = 0;
+		long totalTime = 0;
+		long interTime = 0;
+		long totalCycles = 0;
+		long interCycles = 0;
+		Timer executionTimer = new Timer();
+		
 		while (true)
 		{
 			executionTimer.reset();
@@ -123,9 +123,9 @@ public class Server
 				System.out.println("Average cycle time (span/total): "
 									+ (interTime / interCycles) + "/"
 									+ (totalTime / totalCycles) + "ms");
-				System.out.println("Memory used:                     "
+				System.out.println("Memory used:					 "
 									+ (runtime.totalMemory() - runtime.freeMemory()) + " bytes");
-				System.out.println("Memory (total/max):              "
+				System.out.println("Memory (total/max):			  "
 									+ runtime.totalMemory() + "/"
 									+ runtime.maxMemory() + " bytes");
 				System.out.println("Players online: " + this.<GameService>service(Service.GAME).count());
@@ -141,9 +141,9 @@ public class Server
 			sleepTime = Settings.CYCLE_RATE - executionTimer.elapsed();
 			
 			if (sleepTime > 0 && sleepTime <= Settings.CYCLE_RATE && executionTimer.elapsed() <= Settings.CYCLE_RATE)
-            {
+			{
 				Thread.sleep(sleepTime);
-            }
+			}
 		}
 	}
 	
@@ -152,90 +152,90 @@ public class Server
 	{
 		try
 		{
-            selector.selectNow();
-            
-            for (SelectionKey selectionKey : selector.selectedKeys())
-            {
-            	if (!selectionKey.isValid())
-            	{
-            		selectionKey.cancel(); // make sure it's cancelled, no harm in making sure.
-            		continue;
-            	}
-            	
-                if (selectionKey.isValid() && selectionKey.isAcceptable())
-                {
-                	SocketChannel socket = null;
-                	int amount = 0;
-                	
-                	// there's a limit much time of a cycle will be spent on networking
-                	// also a limit on how many connections will be accepted per cycle
-                	// both are configurable via server.conf
-                	while (executionTimer.elapsed() < Settings.MAX_NEW_CONNECTION_TIME
-                			&& (Settings.MAX_NEW_CONNECTIONS == 0 || (Settings.MAX_NEW_CONNECTIONS != 0 && amount < Settings.MAX_NEW_CONNECTIONS))
-                			&& ((socket = serverChannel.accept()) != null))
-                	{
-                		try
-                		{
-                    		System.out.println("Accepting connection from " + socket.socket());
-                    		socket.configureBlocking(false);
-                    		ByteBuffer service = ByteBuffer.allocate(1);
-                    		int result = socket.read(service);
-                    		
-                    		if (result == -1)
-                    		{
-                    			socket.close();
-                    			selectionKey.cancel();
-                    		}
-                    		else
-                    		{
-                        		SelectionKey key = socket.register(selector, SelectionKey.OP_READ);
-                        		Client client = new Client(key);
-                        		
-                    			if (result >= 0)
-	                    		{
-	                    			service.flip();
-	                    			byte svcID = service.get();
-	                    			client.in().put(svcID);
-	                    			Service<?> svc = service(svcID);
-	                    			
-	                    			try
-	                    			{
-		                    			if (svc instanceof NetworkService)
-		                    			{
-		                    				((NetworkService<?, Client>)svc).register(client);
-		                    			}
-	                    			}
-	                    			catch (Exception ex)
-	                    			{
-	                    				// doesn't accept clients
-	                    			}
-	                    		}
-	                    		else
-	                    		{
-	                        		service(LoginService.class).register(client);
-	                    		}
-                    		}
-                		}
-                		catch (Exception ex)
-                		{
-                			//ex.printStackTrace();
-                			selectionKey.cancel();
-                		}
-                		
-                		amount++;
-                	}
-                }
-                
-                if (selectionKey.isValid() && selectionKey.isReadable())
-                {
-                	((Client)selectionKey.attachment()).read();
-                }
-            }
-        }
+			selector.selectNow();
+			
+			for (SelectionKey selectionKey : selector.selectedKeys())
+			{
+				if (!selectionKey.isValid())
+				{
+					selectionKey.cancel(); // make sure it's cancelled, no harm in making sure.
+					continue;
+				}
+				
+				if (selectionKey.isValid() && selectionKey.isAcceptable())
+				{
+					SocketChannel socket = null;
+					int amount = 0;
+					
+					// there's a limit much time of a cycle will be spent on networking
+					// also a limit on how many connections will be accepted per cycle
+					// both are configurable via server.conf
+					while (executionTimer.elapsed() < Settings.MAX_NEW_CONNECTION_TIME
+							&& (Settings.MAX_NEW_CONNECTIONS == 0 || (Settings.MAX_NEW_CONNECTIONS != 0 && amount < Settings.MAX_NEW_CONNECTIONS))
+							&& ((socket = serverChannel.accept()) != null))
+					{
+						try
+						{
+							System.out.println("Accepting connection from " + socket.socket());
+							socket.configureBlocking(false);
+							ByteBuffer service = ByteBuffer.allocate(1);
+							int result = socket.read(service);
+							
+							if (result == -1)
+							{
+								socket.close();
+								selectionKey.cancel();
+							}
+							else
+							{
+								SelectionKey key = socket.register(selector, SelectionKey.OP_READ);
+								Client client = new Client(key);
+								
+								if (result >= 0)
+								{
+									service.flip();
+									byte svcID = service.get();
+									client.in().put(svcID);
+									Service<?> svc = service(svcID);
+									
+									try
+									{
+										if (svc instanceof NetworkService)
+										{
+											((NetworkService<?, Client>)svc).register(client);
+										}
+									}
+									catch (Exception ex)
+									{
+										// doesn't accept clients
+									}
+								}
+								else
+								{
+									service(LoginService.class).register(client);
+								}
+							}
+						}
+						catch (Exception ex)
+						{
+							//ex.printStackTrace();
+							selectionKey.cancel();
+						}
+						
+						amount++;
+					}
+				}
+				
+				if (selectionKey.isValid() && selectionKey.isReadable())
+				{
+					((Client)selectionKey.attachment()).read();
+				}
+			}
+		}
 		catch (Exception ex)
 		{
 			ex.printStackTrace();
-        }
+		}
 	}
 	
 	protected void rebuildServiceCache()

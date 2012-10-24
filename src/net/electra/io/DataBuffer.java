@@ -9,7 +9,7 @@ import net.electra.math.ISAACRandomSequencer;
 // all you need to do is assign sequencer to a new instance of isaacrandomsequencer and it will begin working in the server.
 public final class DataBuffer
 {
-    private ISAACRandomSequencer sequencer;
+	private ISAACRandomSequencer sequencer;
 	private int lengthPosition = 0;
 	private int position = 0;
 	private int length = 0;
@@ -132,7 +132,7 @@ public final class DataBuffer
 	{
 		while (src.hasRemaining())
 		{
-	         put(src.get());
+			 put(src.get());
 		}
 		
 		return this;

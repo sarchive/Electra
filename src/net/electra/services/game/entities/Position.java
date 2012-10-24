@@ -24,7 +24,7 @@ public class Position implements Cloneable
 	public void refresh()
 	{
 		regionX = ((x >> 3) - 6);
-        regionY = ((y >> 3) - 6);
+		regionY = ((y >> 3) - 6);
 	}
 	
 	public Position delta(Position other)

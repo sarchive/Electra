@@ -51,32 +51,32 @@ public class Player extends Entity implements ClientAdapter
 	{
 		 long l = 0L;
 
-         for (int i = 0; i < username.length(); i++)
-         {
-             char c = username.charAt(i);
+		 for (int i = 0; i < username.length(); i++)
+		 {
+			 char c = username.charAt(i);
 
-             l *= 37L;
+			 l *= 37L;
 
-             if (c >= 'A' && c <= 'Z')
-             {
-                 l += (1 + c) - 65;
-             }
-             else if (c >= 'a' && c <= 'z')
-             {
-                 l += (1 + c) - 97;
-             }
-             else if (c >= '0' && c <= '9')
-             {
-                 l += (27 + c) - 48;
-             }
-         }
+			 if (c >= 'A' && c <= 'Z')
+			 {
+				 l += (1 + c) - 65;
+			 }
+			 else if (c >= 'a' && c <= 'z')
+			 {
+				 l += (1 + c) - 97;
+			 }
+			 else if (c >= '0' && c <= '9')
+			 {
+				 l += (27 + c) - 48;
+			 }
+		 }
 
-         while (l % 37L == 0L && l != 0L)
-         {
-             l /= 37L;
-         }
+		 while (l % 37L == 0L && l != 0L)
+		 {
+			 l /= 37L;
+		 }
 
-         return l;
+		 return l;
 	}
 	
 	public int uid()

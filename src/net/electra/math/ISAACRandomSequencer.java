@@ -17,12 +17,12 @@ public class ISAACRandomSequencer
 	public int next()
 	{
 		if (count-- == 0)
-        {
-            gen();
-            count = 255;
-        }
+		{
+			gen();
+			count = 255;
+		}
 		
-        return results[count];
+		return results[count];
 	}
 	
 	public void seed(int[] seed)
@@ -33,8 +33,8 @@ public class ISAACRandomSequencer
 	
 	private void gen()
 	{
-        lastResult += ++counter;
-        
+		lastResult += ++counter;
+		
 		for(int i = 0; i < 256; i++)
 		{
 			int j = memory[i];

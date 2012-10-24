@@ -94,19 +94,19 @@ public class ConnectEventHandler extends EventHandler<ConnectEvent, PotentialPla
 		else
 		{
 			int[] keys = event.randomSeed();
-            context.client().in().sequencer(new ISAACRandomSequencer(keys));
-            
-            for (int i = 0; i < keys.length; i++)
-            {
-            	keys[i] += 50;
-            }
-            
-            context.client().out().sequencer(new ISAACRandomSequencer(keys));
-            
-            if (outbound instanceof ConnectedEvent)
-            {
-            	completed.fire(new PlayerInitializeEvent());
-            }
+			context.client().in().sequencer(new ISAACRandomSequencer(keys));
+			
+			for (int i = 0; i < keys.length; i++)
+			{
+				keys[i] += 50;
+			}
+			
+			context.client().out().sequencer(new ISAACRandomSequencer(keys));
+			
+			if (outbound instanceof ConnectedEvent)
+			{
+				completed.fire(new PlayerInitializeEvent());
+			}
 		}
 	}
 }

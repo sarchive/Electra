@@ -90,29 +90,29 @@ public class BitBuffer
 	{
 		int bytePos = bitPosition >> 3;
 		int bitOffset = 8 - (bitPosition & 7);
-        bitPosition += amount;
-        dataLength = (bitPosition + 7) / 8;
-        ensure(dataLength);
+		bitPosition += amount;
+		dataLength = (bitPosition + 7) / 8;
+		ensure(dataLength);
 
-        for (; amount > bitOffset; bitOffset = 8)
-        {
-            data[bytePos] &= (byte)~BITMASKS[bitOffset];
-            data[bytePos++] |= (byte)((value >> (amount - bitOffset)) & BITMASKS[bitOffset]);
-            amount -= bitOffset;
-        }
+		for (; amount > bitOffset; bitOffset = 8)
+		{
+			data[bytePos] &= (byte)~BITMASKS[bitOffset];
+			data[bytePos++] |= (byte)((value >> (amount - bitOffset)) & BITMASKS[bitOffset]);
+			amount -= bitOffset;
+		}
 
-        if (amount == bitOffset)
-        {
-        	data[bytePos] &= (byte)~BITMASKS[bitOffset];
-        	data[bytePos] |= (byte)(value & BITMASKS[bitOffset]);
-        }
-        else
-        {
-        	data[bytePos] &= (byte)~(BITMASKS[amount] << (bitOffset - amount));
-            data[bytePos] |= (byte)((value & BITMASKS[amount]) << (bitOffset - amount));
-        }
-        
-        return this;
+		if (amount == bitOffset)
+		{
+			data[bytePos] &= (byte)~BITMASKS[bitOffset];
+			data[bytePos] |= (byte)(value & BITMASKS[bitOffset]);
+		}
+		else
+		{
+			data[bytePos] &= (byte)~(BITMASKS[amount] << (bitOffset - amount));
+			data[bytePos] |= (byte)((value & BITMASKS[amount]) << (bitOffset - amount));
+		}
+		
+		return this;
 	}
 	
 	private void ensure(int minimum)
