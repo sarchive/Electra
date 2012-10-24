@@ -60,7 +60,7 @@ public class ConnectEventHandler extends EventHandler<ConnectEvent, PotentialPla
 		{
 			context.username(event.username());
 			context.uid(event.uid());
-			completed = context.service().completeLogin(context);
+			completed = context.service().server().<GameService>service(Service.GAME).register(context);
 			
 			if (completed == null)
 			{

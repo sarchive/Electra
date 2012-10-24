@@ -6,8 +6,6 @@ import net.electra.Server;
 import net.electra.net.*;
 import net.electra.net.events.NetworkEvent;
 import net.electra.net.events.resolver.NetworkEventData;
-import net.electra.services.game.GameService;
-import net.electra.services.game.entities.players.Player;
 import net.electra.services.login.events.ConnectEvent;
 import net.electra.services.login.events.ReconnectEvent;
 
@@ -32,7 +30,7 @@ public class LoginService extends NetworkService<PotentialPlayer, Client>
 		return player;
 	}
 	
-	public Player completeLogin(PotentialPlayer player)
+	/*public Player completeLogin(PotentialPlayer player)
 	{
 		GameService gameService = server().<GameService>service(GAME);
 		Player loggedIn = gameService.player(player.username());
@@ -58,7 +56,7 @@ public class LoginService extends NetworkService<PotentialPlayer, Client>
 
 		unregister(player);
 		return newPlayer;
-	}
+	}*/
 	
 	@Override
 	public void unregister(PotentialPlayer player)

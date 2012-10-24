@@ -14,6 +14,7 @@ import net.electra.services.Servicable;
 public class Client
 {
 	private final SelectionKey selectionKey;
+	private boolean disconnecting = false;
 	private final ByteBuffer inboundTemp;
 	private final DataBuffer outbound;
 	private final DataBuffer inbound;
@@ -37,15 +38,24 @@ public class Client
 	
 	public void disconnect(DisconnectReason reason)
 	{
-		flush();
-		
-		if (receiver != null)
+		disconnect(reason, true);
+	}
+	
+	public void disconnect(DisconnectReason reason, boolean fireEvent)
+	{
+		if (!disconnecting)
 		{
-			receiver.fire(new DisconnectEvent(reason));
-		}
-		else
-		{
-			System.out.println("Client (" + socketChannel().socket() + ") disconnecting: " + reason);
+			disconnecting = true;
+			flush(true);
+			
+			if (receiver != null)
+			{
+				receiver.fire(new DisconnectEvent(reason));
+			}
+			else
+			{
+				System.out.println("Client (" + socketChannel().socket() + ") disconnecting: " + reason);
+			}
 		}
 		
 		try
@@ -78,8 +88,6 @@ public class Client
 		}
 		catch (Exception ex)
 		{
-			ex.printStackTrace();
-			
 			if (!disconnecting)
 			{
 				disconnect(DisconnectReason.DATA_TRANSFER_ERROR);

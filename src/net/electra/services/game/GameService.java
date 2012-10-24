@@ -4,6 +4,7 @@ import java.util.HashMap;
 
 import net.electra.Server;
 import net.electra.Settings;
+import net.electra.net.Client;
 import net.electra.net.DisconnectReason;
 import net.electra.net.NetworkService;
 import net.electra.services.game.entities.players.Player;
@@ -25,7 +26,33 @@ public class GameService extends NetworkService<Player, PotentialPlayer>
 	@Override
 	public Player register(PotentialPlayer potential)
 	{
-		int idx = firstAvailableIndex();
+		Player loggedIn = player(potential.username());
+		
+		if (loggedIn != null)
+		{
+			Client client = loggedIn.client();
+			client.associate(null); // disassociate currently logged in client
+			loggedIn.associate(potential.client()); // associate old player with new client
+			client.disconnect(DisconnectReason.RECONNECTION); // disconnect old client
+			return loggedIn; // new player is really old player
+		}
+		else
+		{
+			int idx = firstAvailableIndex();
+			
+			if (idx != -1)
+			{
+				Player player = new Player(idx, potential.username(), potential.uid(), this);
+				player.associate(potential.client());
+				players[player.id()] = player;
+				usernames.put(player.username(), idx);
+				playerCount++;
+				return player;
+			}
+		}
+		
+		return null;
+		/*int idx = firstAvailableIndex();
 		
 		if (idx != -1)
 		{
@@ -37,7 +64,7 @@ public class GameService extends NetworkService<Player, PotentialPlayer>
 			return player;
 		}
 		
-		return null;
+		return null;*/
 	}
 	
 	@Override
