@@ -1,0 +1,28 @@
+# Player events
+- context: net.electra.services.game.entities.players.Player
+  handlers:
+    - event: net.electra.services.game.events.PlayerTickEvent
+      chain:
+        - link: net.electra.services.game.events.handlers.PlayerUpdateEventHandler
+    - event: net.electra.services.game.events.PlayerInitializeEvent
+      chain:
+        - link: net.electra.services.game.events.handlers.PlayerInitializeEventHandler
+# PotentialPlayer events
+- context: net.electra.services.login.PotentialPlayer
+  handlers:
+    - event: net.electra.services.login.events.HandshakeRequestEvent
+      chain:
+        - link: net.electra.services.login.events.handlers.HandshakeRequestEventHandler
+    - event: net.electra.services.login.events.ConnectEvent
+      chain:
+        - link: net.electra.services.login.events.handlers.ConnectEventHandler
+    - event: net.electra.services.login.events.ReconnectEvent
+      chain:
+        - link: net.electra.services.login.events.handlers.ConnectEventHandler
+# ClientAdapter events
+- context: net.electra.net.ClientAdapter
+  handlers:
+    - event: net.electra.net.events.DisconnectEvent
+      chain:
+        - link: net.electra.services.game.events.handlers.DisconnectEventHandler
+        - link: net.electra.services.login.events.handlers.DisconnectEventHandler

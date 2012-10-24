@@ -1,0 +1,89 @@
+# This file follows the YAML specification and is parsed by the YAML parser, constructed in memory, then compiled into Java bytecode via the Electra Event Compiler.
+# The Electra Event Compiler compiles all the events into a JAR named "events.jar" to be included in your classpath. Make sure you configure your IDE to include "events.jar" if you use an IDE.
+# One of the main features is the ability to determine the length of the packet automatically. If there's an expression for the amount of elements in an array or a string then we know that it's variable in its length.
+# Another feature is that you can define custom data types. These types will also be explicitly available to you in your code. These are just compiled as subclasses.
+# Arrays can either have a fixed size or a dynamic size. Dynamically sized arrays use expressions. Any numeric variable that has previously been parsed can be used in the expression.
+# There are a few variables which aren't immediately apparent. These variables are size, remaining, and current.
+# Size is the total size of the event, remaining (size - current) is how much you have left to read, and current is how much you have read already.
+# Expressions support all basic math functions and you can use constant numbers. Any data type can be read as an array and any array can be read *expression* amount of times.
+- namespace: net.electra.services.login
+  events:
+    # START INBOUND EVENTS
+    - name: HandshakeRequestEvent
+      inbound: true
+      op: 14
+      payload:
+        - nameHash: byte
+    # START OUTBOUND EVENTS
+    - name: HandshakeAcknowledgeEvent
+      op: 0
+      payload:
+        - padding: long
+        - serverSessionKey: long
+    - name: ConnectedEvent
+      op: 2
+      payload:
+        - playerRights: byte
+        - flaggedForBotting: boolean
+    - name: ReconnectedEvent
+      op: 15
+    - name: ErrorEvent
+      payload:
+        - response: byte
+- namespace: net.electra.services.game
+  events:
+    # START INBOUND EVENTS
+    - name: KeepAliveEvent
+      inbound: true
+      op: 0
+    - name: FocusChangeEvent
+      inbound: true
+      op: 3
+      payload:
+        - focused: boolean
+    - name: CameraMoveEvent
+      inbound: true
+      op: 86
+      payload:
+        - x: short
+        - y: short
+    - name: CommandEvent
+      inbound: true
+      op: 103
+      payload:
+        - command: string
+    - name: RegionLoadedEvent
+      inbound: true
+      op: 121
+    - name: CloseWindowEvent
+      inbound: true
+      op: 130
+    - name: ButtonClickEvent
+      inbound: true
+      op: 185
+      payload:
+        - button: short
+    - name: IdleLogoutEvent
+      inbound: true
+      op: 202
+    - name: RegionChangedEvent
+      inbound: true
+      op: 210
+      payload:
+        - antiInject: int
+    - name: MouseClickEvent
+      inbound: true
+      op: 241
+      payload:
+        - x: short
+        - y: short
+    # START OUTBOUND EVENTS
+    - name: LoadRegionEvent
+      op: 73
+      payload:
+        - x: short
+        - y: short
+    - name: SendMessageEvent
+      op: 253
+      payload:
+        - message: string
