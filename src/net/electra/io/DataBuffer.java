@@ -233,16 +233,16 @@ public final class DataBuffer
 		return put((byte)(sequencer == null ? value : value + sequencer.next()));
 	}
 	
-	public DataBuffer putByteHeader(int value)
+	public DataBuffer putLengthByte()
 	{
-		putHeader(value).put((byte)0);
+		put((byte)0);
 		lengthPosition = position;
 		return this;
 	}
 	
-	public DataBuffer putShortHeader(int value)
+	public DataBuffer putLengthShort()
 	{
-		putHeader(value).putShort((short)0);
+		putShort((short)0);
 		lengthPosition = position;
 		return this;
 	}

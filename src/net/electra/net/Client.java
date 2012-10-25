@@ -111,16 +111,21 @@ public class Client
 		
 		int id = -1; // up here so we can use it in error reporting
 		int length = -1;
+		int readAmount = -1;
 		
 		try
 		{
-			if (socketChannel().read(inboundTemp) == -1)
+			if ((readAmount = socketChannel().read(inboundTemp)) == -1)
 			{
 				disconnect(DisconnectReason.DATA_TRANSFER_ERROR);
 				return;
 			}
 			
-			timeoutTimer.reset();
+			if (readAmount > 0)
+			{
+				timeoutTimer.reset();
+			}
+			
 			boolean hasEnoughData = true;
 			
 			inboundTemp.flip();
@@ -169,7 +174,7 @@ public class Client
 		}
 		catch (Exception ex)
 		{
-			System.err.println("Error parsing " + id + " (len: " + length + ")");
+			System.err.println("Error parsing " + id + " (len: " + length + ", read: " + readAmount + ")");
 			ex.printStackTrace();
 			disconnect(DisconnectReason.DATA_TRANSFER_ERROR);
 		}
@@ -179,32 +184,27 @@ public class Client
 	{
 		if (event.id() != -1)
 		{
-			if (event.length() == -1)
-			{
-				outbound.putByteHeader(event.id());
-			}
-			else if (event.length() == -2)
-			{
-				outbound.putShortHeader(event.id());
-			}
-			else
-			{
-				outbound.putHeader(event.id());
-			}
+			outbound.putHeader(event.id());
+		}
+		
+		if (event.length() == -1)
+		{
+			outbound.putLengthByte();
+		}
+		else if (event.length() == -2)
+		{
+			outbound.putLengthShort();
 		}
 		
 		event.build(outbound);
 		
-		if (event.id() != -1)
+		if (event.length() == -1)
 		{
-			if (event.length() == -1)
-			{
-				outbound.finishByteHeader();
-			}
-			else if (event.length() == -2)
-			{
-				outbound.finishShortHeader();
-			}
+			outbound.finishByteHeader();
+		}
+		else if (event.length() == -2)
+		{
+			outbound.finishShortHeader();
 		}
 	}
 	

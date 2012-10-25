@@ -104,8 +104,8 @@ public class Server
 						if (hanging)
 						{
 							System.out.println("Server thread seems to be hanging. Dumping thread data and restarting...");
-							System.err.println("Name:		" + server.thread().getName());
-							System.err.println("State:	   " + server.thread().getState());
+							System.err.println("Name:        " + server.thread().getName());
+							System.err.println("State:       " + server.thread().getState());
 							System.err.println("Stack trace: ");
 							
 							for (StackTraceElement ele : server.thread().getStackTrace())
@@ -179,13 +179,13 @@ public class Server
 			}
 			// end cpu intensive stuff
 			
-			if (totalTime > 0 && totalCycles > 0 && interCycles >= 50)
+			if (interCycles >= 50 && totalTime > 0 && interTime > 0)
 			{
 				// every 50 cycles (30 seconds) print system information
 				System.out.println("Average cycle time (span/total): " + (interTime / interCycles) + "/" + (totalTime / totalCycles) + "ms");
-				System.out.println("Memory used:					 " + (runtime.totalMemory() - runtime.freeMemory()) + " bytes");
-				System.out.println("Memory (total/max):			  " + runtime.totalMemory() + "/" + runtime.maxMemory() + " bytes");
-				System.out.println("Players online:				  " + this.<GameService>service(Service.GAME).count());
+				System.out.println("Memory used:                     " + (runtime.totalMemory() - runtime.freeMemory()) + " bytes");
+				System.out.println("Memory (total/max):              " + runtime.totalMemory() + "/" + runtime.maxMemory() + " bytes");
+				System.out.println("Players online:                  " + this.<GameService>service(Service.GAME).count());
 				
 				interTime = 0;
 				interCycles = 0;
