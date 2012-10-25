@@ -25,7 +25,19 @@ public final class EventDebugHandler extends EventHandler<Event, Object>
 				
 				boolean access = field.isAccessible();
 				field.setAccessible(true); // afaik this is the only way to safely do this
-				System.out.println("\t" + field.getType().getName() + " " + field.getName() + " = " + field.get(event));
+				Object f = field.get(event);
+				System.out.println("\t" + field.getType().getName() + " " + field.getName() + " = " + f);
+				
+				if (f.getClass().isArray())
+				{
+					Object[] fA = (Object[])f;
+					
+					for (Object a : fA)
+					{
+						System.out.println("\t\t" + a.getClass().getName() + " = " + a);
+					}
+				}
+				
 				field.setAccessible(access);
 			}
 		}

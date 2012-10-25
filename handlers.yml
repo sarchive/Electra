@@ -7,6 +7,10 @@
     - event: net.electra.services.game.events.PlayerInitializeEvent
       chain:
         - link: net.electra.services.game.events.handlers.PlayerInitializeEventHandler
+    - event: net.electra.services.game.events.MovementEvent
+      chain:
+        #- link: net.electra.events.handlers.EventDebugHandler
+        - link: net.electra.services.game.events.handlers.MovementEventHandler
 # PotentialPlayer events
 - context: net.electra.services.login.PotentialPlayer
   handlers:

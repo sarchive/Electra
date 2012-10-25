@@ -7,7 +7,10 @@ import net.electra.Settings;
 import net.electra.net.Client;
 import net.electra.net.DisconnectReason;
 import net.electra.net.NetworkService;
+import net.electra.net.events.NetworkEvent;
+import net.electra.net.events.resolver.NetworkEventData;
 import net.electra.services.game.entities.players.Player;
+import net.electra.services.game.events.MovementEvent;
 import net.electra.services.game.events.PlayerTickEvent;
 import net.electra.services.login.PotentialPlayer;
 
@@ -17,9 +20,11 @@ public class GameService extends NetworkService<Player, PotentialPlayer>
 	private final Player[] players = new Player[Settings.PLAYER_CAPACITY];
 	private int playerCount = 0;
 	
+	@SuppressWarnings("unchecked")
 	public GameService(Server server)
 	{
 		super(server);
+		networkEvents().put(98, new NetworkEventData(98, -1, (Class<NetworkEvent>)((Class<?>)MovementEvent.class)));
 		networkEvents().putAll(server.resolver().resolve("net.electra.services.game.events"));
 	}
 
@@ -66,6 +71,16 @@ public class GameService extends NetworkService<Player, PotentialPlayer>
 	public void process()
 	{
 		PlayerTickEvent tickEvent = new PlayerTickEvent(server().tick());
+		
+		for (Player player : players)
+		{
+			if (player == null)
+			{
+				continue;
+			}
+			
+			player.advancePosition();
+		}
 		
 		for (Player player : players)
 		{

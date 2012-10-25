@@ -20,10 +20,18 @@ public class Position implements Cloneable
 	{
 		this(x, y, 0);
 	}
+	
+	public void copy(Position position)
+	{
+		this.x = position.x;
+		this.y = position.y;
+		this.z = position.z;
+		refresh();
+	}
 
 	public void refresh()
 	{
-		regionX = ((x >> 3) - 6);
+		regionX = ((x >> 3) - 6); // tmyk: shifting a number 3 right is the same as dividing by 8
 		regionY = ((y >> 3) - 6);
 	}
 	
@@ -44,14 +52,88 @@ public class Position implements Cloneable
 	}
 	
 	@Override
+	public int hashCode()
+	{
+		return ((z << 30) & 0xC0000000) | ((y << 15) & 0x3FFF8000) | (x & 0x7FFF); // stolen from apollo :)
+	}
+	
+	@Override
+	public String toString()
+	{
+		return "Position[x: " + x + ", y: " + y + ", z: " + z + "]";
+	}
+	
+	@Override
 	public Object clone()
 	{
 		return new Position(x, y, z);
 	}
 	
+	public boolean equals(Object obj)
+	{
+		if (obj == this)
+		{
+			return true;
+		}
+		
+		if (obj != null && obj instanceof Position)
+		{
+			Position other = (Position)obj;
+			
+			if (other.x == x && other.y == y && other.z == z)
+			{
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
 	public void step(int x, int y)
 	{
 		move(this.x + x, this.y + y);
+	}
+	
+	public void step(Direction direction)
+	{
+		int x = 0;
+		int y = 0;
+		
+		switch (direction)
+		{
+			case NORTH_WEST:
+				x--;
+				y++;
+				break;
+			case NORTH_EAST:
+				x++;
+				y++;
+				break;
+			case NORTH:
+				y++;
+				break;
+			case EAST:
+				x++;
+				break;
+			case SOUTH_WEST:
+				x--;
+				y--;
+				break;
+			case SOUTH_EAST:
+				x++;
+				y--;
+				break;
+			case SOUTH:
+				y--;
+				break;
+			case WEST:
+				x--;
+				break;
+			default:
+				break;
+		}
+		
+		step(x, y);
 	}
 	
 	public int x()
@@ -81,7 +163,7 @@ public class Position implements Cloneable
 	
 	public int localX()
 	{
-		return x - 8 * regionX;
+		return x - 8 * regionX; // tmyk: you could also left shift by 3 to multiply by 8
 	}
 	
 	public int localY()

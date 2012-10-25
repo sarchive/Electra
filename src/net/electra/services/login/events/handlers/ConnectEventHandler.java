@@ -105,7 +105,12 @@ public class ConnectEventHandler extends EventHandler<ConnectEvent, PotentialPla
 			
 			if (outbound instanceof ConnectedEvent)
 			{
+				System.out.println("Player \"" + completed.username() + "\" connected.");
 				completed.fire(new PlayerInitializeEvent());
+			}
+			else
+			{
+				System.out.println("Player \"" + completed.username() + "\" reconnected.");
 			}
 		}
 	}

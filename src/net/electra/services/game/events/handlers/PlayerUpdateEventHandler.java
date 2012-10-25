@@ -8,6 +8,7 @@ import net.electra.events.EventHandler;
 import net.electra.io.BitBuffer;
 import net.electra.io.DataBuffer;
 import net.electra.net.events.NetworkEvent;
+import net.electra.services.game.entities.Direction;
 import net.electra.services.game.entities.Position;
 import net.electra.services.game.entities.UpdateMask;
 import net.electra.services.game.entities.players.Player;
@@ -27,7 +28,7 @@ public class PlayerUpdateEventHandler extends EventHandler<PlayerTickEvent, Play
 		final DataBuffer blocks = new DataBuffer();
 		boolean blockUpdate = player.mask().mask() > 0;
 		
-		if (player.placementRequired() || blockUpdate)
+		if (player.placementRequired() || blockUpdate || player.movementRequired())
 		{
 			bits.put(true);
 			updatePlayerState(bits, player, blockUpdate, true);
@@ -178,6 +179,22 @@ public class PlayerUpdateEventHandler extends EventHandler<PlayerTickEvent, Play
 			}
 		}
 		
-		buffer.put(2, 0);
+		if (player.firstDirection() == Direction.NONE)
+		{
+			buffer.put(2, 0);
+		}
+		else if (player.secondDirection() == Direction.NONE)
+		{
+			buffer.put(2, 1);
+			buffer.put(3, player.firstDirection().value());
+			buffer.put(update);
+		}
+		else
+		{
+			buffer.put(2, 2);
+			buffer.put(3, player.firstDirection().value());
+			buffer.put(3, player.secondDirection().value());
+			buffer.put(update);
+		}
 	}
 }

@@ -8,10 +8,10 @@ import java.util.Queue;
 import net.electra.net.Client;
 import net.electra.net.ClientAdapter;
 import net.electra.services.game.GameService;
-import net.electra.services.game.entities.Entity;
+import net.electra.services.game.entities.Character;
 import net.electra.services.game.entities.Position;
 
-public class Player extends Entity implements ClientAdapter
+public class Player extends Character implements ClientAdapter
 {
 	private final List<SoftReference<Player>> localPlayers = new LinkedList<SoftReference<Player>>();
 	private final Queue<SoftReference<Player>> newPlayers = new LinkedList<SoftReference<Player>>();

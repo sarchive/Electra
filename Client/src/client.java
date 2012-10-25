@@ -6220,11 +6220,18 @@ public final class client extends RSApplet {
 			anInt1288 += k4;
 			if(anInt1288 >= 92)
 			{
-				stream.createFrame(36);
-				stream.writeDWord(0);
+				// every 92 steps it sends this, i think it's safe to remove it. i believe it's "anticheat."
+				/*stream.createFrame(36);
+				stream.writeDWord(0);*/
 				anInt1288 = 0;
 			}
-			if(i == 0)
+			
+			stream.createFrame(98); // what's the point of wasting packet ids?
+			stream.writeWordBigEndian(k4 + k4 + 4);
+			System.out.println("walking packet (" + i + ") length  " + (k4 + k4 + 4));
+			stream.writeWordBigEndian(i); // type of walking, 0 = regular walk, 1 = minimap walk, 2 = click object/entity walk 
+			
+			/*if(i == 0)
 			{
 				stream.createFrame(164);
 				stream.writeWordBigEndian(k4 + k4 + 3);
@@ -6232,14 +6239,16 @@ public final class client extends RSApplet {
 			if(i == 1)
 			{
 				stream.createFrame(248);
-				stream.writeWordBigEndian(k4 + k4 + 3 + 14);
+				stream.writeWordBigEndian(k4 + k4 + 3); // + 14
 			}
 			if(i == 2)
 			{
 				stream.createFrame(98);
 				stream.writeWordBigEndian(k4 + k4 + 3);
-			}
+			}*/
 			stream.method433(k6 + baseX);
+			stream.method431(i7 + baseY);
+			stream.method424(super.keyArray[5] != 1 ? 0 : 1);
 			destX = bigX[0];
 			destY = bigY[0];
 			for(int j7 = 1; j7 < k4; j7++)
@@ -6248,9 +6257,6 @@ public final class client extends RSApplet {
 				stream.writeWordBigEndian(bigX[i4] - k6);
 				stream.writeWordBigEndian(bigY[i4] - i7);
 			}
-
-			stream.method431(i7 + baseY);
-			stream.method424(super.keyArray[5] != 1 ? 0 : 1);
 			return true;
 		}
 		return i != 1;
@@ -7078,8 +7084,8 @@ public final class client extends RSApplet {
 				boolean flag1 = doWalkTo(1, 0, 0, 0, myPlayer.smallY[0], 0, 0, j2, myPlayer.smallX[0], true, i2);
 				if(flag1)
 				{
-					stream.writeWordBigEndian(i);
-					stream.writeWordBigEndian(j);
+					/*stream.writeWordBigEndian(i); // idk what this value means
+					stream.writeWordBigEndian(j); // this too
 					stream.writeWord(minimapInt1);
 					stream.writeWordBigEndian(57);
 					stream.writeWordBigEndian(minimapInt2);
@@ -7087,8 +7093,8 @@ public final class client extends RSApplet {
 					stream.writeWordBigEndian(89);
 					stream.writeWord(myPlayer.x);
 					stream.writeWord(myPlayer.y);
-					stream.writeWordBigEndian(anInt1264);
-					stream.writeWordBigEndian(63);
+					stream.writeWordBigEndian(anInt1264); // set during path calculation, no idea what it means.
+					stream.writeWordBigEndian(63);*/
 				}
 			}
 			anInt1117++;
@@ -8456,8 +8462,8 @@ public final class client extends RSApplet {
 			anInt1142++;
 			if(anInt1142 > 67)
 			{
-				anInt1142 = 0;
-				stream.createFrame(78);
+				anInt1142 = 0; // when the cross has been around for 67 draws?
+				//stream.createFrame(78);
 			}
 		}
 		if(crossType == 2)
