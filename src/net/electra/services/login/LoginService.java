@@ -30,34 +30,6 @@ public class LoginService extends NetworkService<PotentialPlayer, Client>
 		return player;
 	}
 	
-	/*public Player completeLogin(PotentialPlayer player)
-	{
-		GameService gameService = server().<GameService>service(GAME);
-		Player loggedIn = gameService.player(player.username());
-		Player newPlayer = null;
-		
-		if (loggedIn != null)
-		{
-			Client client = loggedIn.client(); // currently logged in client
-			client.associate(null); // disassociate currently logged in client
-			loggedIn.associate(player.client()); // associate old player with new client
-			client.disconnect(DisconnectReason.RECONNECTION); // disconnect old client
-			newPlayer = loggedIn; // new player is really old player
-		}
-		else
-		{
-			newPlayer = gameService.register(player); // register a brand new player
-		}
-		
-		if (newPlayer != null)
-		{
-			System.out.println("Player \"" + player.username() + "\" has completed login. (UID: " + player.uid() + ")");
-		}
-
-		unregister(player);
-		return newPlayer;
-	}*/
-	
 	@Override
 	public void unregister(PotentialPlayer player)
 	{

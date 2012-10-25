@@ -52,19 +52,6 @@ public class GameService extends NetworkService<Player, PotentialPlayer>
 		}
 		
 		return null;
-		/*int idx = firstAvailableIndex();
-		
-		if (idx != -1)
-		{
-			Player player = new Player(idx, potential.username(), potential.uid(), this);
-			player.associate(potential.client());
-			players[player.id()] = player;
-			usernames.put(player.username(), idx);
-			playerCount++;
-			return player;
-		}
-		
-		return null;*/
 	}
 	
 	@Override

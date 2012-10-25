@@ -5,7 +5,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
@@ -37,9 +36,11 @@ public class Server
 	private final HashMap<Integer, Service<?>> services = new HashMap<Integer, Service<?>>();
 	private Service<?>[] serviceCache = new Service<?>[0];
 	private final ServerSocketChannel serverChannel;
+	private Timer executionTimer = new Timer();
 	private final EventResolver eventResolver;
 	private final EventManager eventManager;
 	private final Selector selector;
+	private Thread currentThread;
 	private long tick = 0;
 	
 	public Server(EventResolver eventResolver, EventManager eventManager) throws IOException
@@ -50,7 +51,7 @@ public class Server
 		this.serverChannel = ServerSocketChannel.open();
 	}
 	
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "deprecation" })
 	public static void main(String[] arguments)
 	{
 		System.setOut(new TimeLogger(System.out, new SimpleDateFormat("hh:mm:ss a")));
@@ -64,43 +65,104 @@ public class Server
 			asdf.read(allData);
 			EventResolver eventResolver = new EventResolver((List<Map<String, Object>>)new Yaml().load(new String(allData)));
 			EventManager eventManager = new EventManager((List<Map<String, Object>>)new Yaml().load(new FileInputStream(new File("./handlers.yml"))));
-			Server server = new Server(eventResolver, eventManager);
+			final Server server = new Server(eventResolver, eventManager);
 			server.register(Service.LOGIN, new LoginService(server));
 			server.register(Service.GAME, new GameService(server));
-			server.run(); // blocks
+			Runnable r = new Runnable()
+			{	
+				@Override
+				public void run()
+				{
+					try
+					{
+						server.run();
+					}
+					catch (InterruptedException ex)
+					{
+						ex.printStackTrace();
+					}
+				}
+			};
+
+			System.out.println(Settings.SERVER_NAME + " ----------------------------------------------");
+			System.out.println("Server started:  " + new Date());
+			System.out.println("Build date:	  " + new Date(new File(server.getClass().getClassLoader().getResource(server.getClass().getCanonicalName().replace('.', '/') + ".class").toURI()).lastModified()));
+			System.out.println("Client version:  " + Settings.MINIMUM_CLIENT_VERSION);
+			System.out.println("Server version:  " + Settings.SERVER_VERSION);
+			System.out.println("---------------------------------------------- " + Settings.SERVER_NAME);
+			server.bind();
+			
+			// this server tries to be resilient, automatically restarting itself if there's a problem.
+			while (true)
+			{
+				try
+				{
+					boolean hanging = server.executionTimer().elapsed() > Settings.CYCLE_RATE * 10; // if we missed 10 cycles then we're probably hanging and should get down!
+					
+					if (!server.thread().isAlive() || hanging)
+					{
+						if (hanging)
+						{
+							System.out.println("Server thread seems to be hanging. Dumping thread data and restarting...");
+							System.err.println("Name:		" + server.thread().getName());
+							System.err.println("State:	   " + server.thread().getState());
+							System.err.println("Stack trace: ");
+							
+							for (StackTraceElement ele : server.thread().getStackTrace())
+							{
+								System.out.println("\t" + ele);
+							}
+							
+							server.thread().interrupt();
+							server.thread().stop();
+							server.executionTimer.reset();
+						}
+						else
+						{
+							System.out.println("Server thread is not running. Starting...");
+						}
+						
+						server.thread().start();
+					}
+
+					Thread.sleep(1);
+				}
+				catch (Exception ex)
+				{
+					//ex.printStackTrace();
+					System.out.println("Server thread is not assigned. Assigning...");
+					server.thread(new Thread(r));
+				}
+			}
 		}
 		catch (Exception ex)
 		{
 			ex.printStackTrace();
 		}
 		
-		System.out.println(Settings.SERVER_NAME + " Server terminated");
+		System.out.println(Settings.SERVER_NAME + " server terminated");
 	}
 	
-	public void run() throws InterruptedException, IOException, URISyntaxException
+	public void bind() throws IOException
 	{
-		Runtime runtime = Runtime.getRuntime();
-		System.out.println(Settings.SERVER_NAME + " ----------------------------------------------");
-		System.out.println("Server started:  " + new Date());
-		System.out.println("Build date:	  " + new Date(new File(getClass().getClassLoader().getResource(getClass().getCanonicalName().replace('.', '/') + ".class").toURI()).lastModified()));
-		System.out.println("Client version:  " + Settings.MINIMUM_CLIENT_VERSION);
-		System.out.println("Server version:  " + Settings.SERVER_VERSION);
-		System.out.println("---------------------------------------------- " + Settings.SERVER_NAME);
-		
 		InetSocketAddress address = new InetSocketAddress(Settings.ADDRESS, Settings.PORT);
 		System.out.println("Attempting to bind to " + address);
 		serverChannel.configureBlocking(false);
 		serverChannel.socket().bind(address);
 		serverChannel.register(selector, SelectionKey.OP_ACCEPT);
 		System.out.println("Listening on " + serverChannel.getLocalAddress());
-		System.out.println("Cycling server at a frequency of " + Settings.CYCLE_RATE + "ms");
-		
+	}
+	
+	public void run() throws InterruptedException
+	{
+		Runtime runtime = Runtime.getRuntime();
 		long sleepTime = 0;
 		long totalTime = 0;
 		long interTime = 0;
 		long totalCycles = 0;
 		long interCycles = 0;
-		Timer executionTimer = new Timer();
+
+		System.out.println("Cycling server at a frequency of " + Settings.CYCLE_RATE + "ms");
 		
 		while (true)
 		{
@@ -117,23 +179,18 @@ public class Server
 			}
 			// end cpu intensive stuff
 			
-			if (totalTime > 0 && totalCycles > 0 && totalCycles % 50 == 0)
+			if (totalTime > 0 && totalCycles > 0 && interCycles >= 50)
 			{
 				// every 50 cycles (30 seconds) print system information
-				System.out.println("Average cycle time (span/total): "
-									+ (interTime / interCycles) + "/"
-									+ (totalTime / totalCycles) + "ms");
-				System.out.println("Memory used:					 "
-									+ (runtime.totalMemory() - runtime.freeMemory()) + " bytes");
-				System.out.println("Memory (total/max):			  "
-									+ runtime.totalMemory() + "/"
-									+ runtime.maxMemory() + " bytes");
-				System.out.println("Players online: " + this.<GameService>service(Service.GAME).count());
+				System.out.println("Average cycle time (span/total): " + (interTime / interCycles) + "/" + (totalTime / totalCycles) + "ms");
+				System.out.println("Memory used:					 " + (runtime.totalMemory() - runtime.freeMemory()) + " bytes");
+				System.out.println("Memory (total/max):			  " + runtime.totalMemory() + "/" + runtime.maxMemory() + " bytes");
+				System.out.println("Players online:				  " + this.<GameService>service(Service.GAME).count());
 				
 				interTime = 0;
 				interCycles = 0;
 			}
-
+			
 			totalCycles++;
 			interCycles++;
 			interTime += executionTimer.elapsed();
@@ -319,6 +376,21 @@ public class Server
 	public EventResolver resolver()
 	{
 		return eventResolver;
+	}
+	
+	public Thread thread()
+	{
+		return currentThread;
+	}
+	
+	public void thread(Thread value)
+	{
+		currentThread = value;
+	}
+	
+	public Timer executionTimer()
+	{
+		return executionTimer;
 	}
 	
 	public Selector selector()
