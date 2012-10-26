@@ -1804,12 +1804,7 @@ public final class client extends RSApplet {
 		{
 			if(l == 0L)
 				return;
-			if(friendsCount >= 100 && anInt1046 != 1)
-			{
-				pushMessage("Your friendlist is full. Max of 100 for free users, and 200 for members", 0, "");
-				return;
-			}
-			if(friendsCount >= 200)
+			if((friendsCount >= 100 && anInt1046 != 1) || friendsCount >= 200)
 			{
 				pushMessage("Your friendlist is full. Max of 100 for free users, and 200 for members", 0, "");
 				return;
@@ -1831,7 +1826,8 @@ public final class client extends RSApplet {
 			if(s.equals(myPlayer.name))
 			{
 				return;
-			} else
+			}
+			else
 			{
 				friendsList[friendsCount] = s;
 				friendsListAsLongs[friendsCount] = l;
@@ -8506,7 +8502,7 @@ public final class client extends RSApplet {
 				i1 = 0xff0000;
 			aTextDrawingArea_1271.method380("Memory: " + j1 + "k", c, 0xffff00, k);
 			k += 15;
-			aTextDrawingArea_1271.method380("Mouse X: " + super.mouseX + ", Mouse Y: " + super.mouseY, c, 0xffff00, k);
+			aTextDrawingArea_1271.method380("Mouse: " + super.mouseX + ", " + super.mouseY, c, 0xffff00, k);
 			k += 15;
 			aTextDrawingArea_1271.method380("Coordinates: " + x + ", " + y, c, 0xffff00, k);
 			k += 15;
@@ -9718,7 +9714,7 @@ public final class client extends RSApplet {
 			int l3 = stream.method428();
 			int k6 = anInt1268 + (l3 >> 4 & 7);
 			int j9 = anInt1269 + (l3 & 7);
-			int i12 = stream.method435();
+			int i12 = stream.method435(); // other player id?
 			int j14 = stream.readUnsignedWord();
 			if(k6 >= 0 && j9 >= 0 && k6 < 104 && j9 < 104 && i12 != unknownInt10)
 			{
@@ -10313,7 +10309,6 @@ public final class client extends RSApplet {
 			int i = socketStream.available();
 			if(i == 0)
 				return false;
-			System.out.println("avail: " + i);
 			if(pktType == -1)
 			{
 				socketStream.flushInputStream(inStream.buffer, 1);
@@ -10331,9 +10326,9 @@ public final class client extends RSApplet {
 					pktSize = inStream.buffer[0] & 0xff;
 					i--;
 					amountOfDataIn++;
-				} else
+				}
+				else
 				{
-					System.out.println("pkt1 not big enough");
 					return false;
 				}
 			if(pktSize == -2)
@@ -10344,9 +10339,9 @@ public final class client extends RSApplet {
 					pktSize = inStream.readUnsignedWord();
 					amountOfDataIn += 2;
 					i -= 2;
-				} else
+				}
+				else
 				{
-					System.out.println("pkt2 not big enough");
 					return false;
 				}
 			System.out.println("pktType: " + pktType + ", pktSize: " + pktSize);
@@ -10359,7 +10354,7 @@ public final class client extends RSApplet {
 			anInt843 = anInt842;
 			anInt842 = anInt841;
 			anInt841 = pktType;
-			System.out.println("recv: " + pktType);
+			//System.out.println("recv: " + pktType);
 			if(pktType == 81)
 			{
 				updatePlayers(pktSize, inStream);
@@ -11354,8 +11349,8 @@ public final class client extends RSApplet {
 			}
 			if(pktType == 249)
 			{
-				anInt1046 = inStream.method426();
-				unknownInt10 = inStream.method436();
+				anInt1046 = inStream.method426(); // members or not 1 = members
+				unknownInt10 = inStream.method436(); // default -1?
 				pktType = -1;
 				return true;
 			}
