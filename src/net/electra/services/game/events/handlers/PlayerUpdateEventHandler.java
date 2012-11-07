@@ -12,7 +12,6 @@ import net.electra.services.game.entities.Direction;
 import net.electra.services.game.entities.Position;
 import net.electra.services.game.entities.UpdateMask;
 import net.electra.services.game.entities.players.Player;
-import net.electra.services.game.events.LoadRegionEvent;
 import net.electra.services.game.events.PlayerTickEvent;
 
 public class PlayerUpdateEventHandler extends EventHandler<PlayerTickEvent, Player>
@@ -26,14 +25,13 @@ public class PlayerUpdateEventHandler extends EventHandler<PlayerTickEvent, Play
 		// update 10/19/2012, i'm tossing around design ideas so you'll see a bunch of random code in here
 		final BitBuffer bits = new BitBuffer();
 		final DataBuffer blocks = new DataBuffer();
-		boolean blockUpdate = player.mask().mask() > 0;
 		
-		if (player.placementRequired() || blockUpdate || player.movementRequired())
+		if (player.placementRequired() || player.blockRequired() || player.movementRequired())
 		{
 			bits.put(true);
-			updatePlayerState(bits, player, blockUpdate, true);
+			updatePlayerState(bits, player, true);
 			
-			if (blockUpdate)
+			if (player.blockRequired())
 			{
 				updateBlock(blocks, player);
 			}
@@ -116,6 +114,7 @@ public class PlayerUpdateEventHandler extends EventHandler<PlayerTickEvent, Play
 			int[] looks 		= { 0, 0, 0, 0, 25, 0, 29, 39, 7, 35, 44, 14 };
 			int[] colors		= { 7, 8, 9, 5, 0 };
 			int[] movementAnims = { 0x328, 0x337, 0x334, 0x335, 0x336, 0x333, 0x338 };
+			// standing, turning, turning around, quarter clockwise, quarter counter clockwise, running
 			
 			appearence.put(equipment[11]); // gender
 			appearence.put(0); // skull
@@ -161,18 +160,16 @@ public class PlayerUpdateEventHandler extends EventHandler<PlayerTickEvent, Play
 		}
 	}
 	
-	public void updatePlayerState(BitBuffer buffer, Player player, boolean update, boolean current)
+	public void updatePlayerState(BitBuffer buffer, Player player, boolean current)
 	{
 		if (current)
 		{
 			if (player.placementRequired())
 			{
-				player.client().write(new LoadRegionEvent((short)(player.position().regionX() + 6), (short)(player.position().regionY() + 6)));
-				player.placementRequired(false);
 				buffer.put(2, 3);
 				buffer.put(2, player.position().z());
 				buffer.put(true);
-				buffer.put(update);
+				buffer.put(player.blockRequired());
 				buffer.put(7, player.position().localY());
 				buffer.put(7, player.position().localX());
 				return;
@@ -187,14 +184,14 @@ public class PlayerUpdateEventHandler extends EventHandler<PlayerTickEvent, Play
 		{
 			buffer.put(2, 1);
 			buffer.put(3, player.firstDirection().value());
-			buffer.put(update);
+			buffer.put(player.blockRequired());
 		}
 		else
 		{
 			buffer.put(2, 2);
 			buffer.put(3, player.firstDirection().value());
 			buffer.put(3, player.secondDirection().value());
-			buffer.put(update);
+			buffer.put(player.blockRequired());
 		}
 	}
 }

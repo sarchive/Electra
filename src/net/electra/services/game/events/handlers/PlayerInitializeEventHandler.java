@@ -4,7 +4,6 @@ import net.electra.Settings;
 import net.electra.events.EventHandler;
 import net.electra.services.game.entities.UpdateMask;
 import net.electra.services.game.entities.players.Player;
-import net.electra.services.game.events.CloseInterfacesEvent;
 import net.electra.services.game.events.PlayerInitializeEvent;
 import net.electra.services.game.events.SendMessageEvent;
 import net.electra.services.game.events.SetPrivacySettingsEvent;
@@ -17,7 +16,7 @@ public class PlayerInitializeEventHandler extends EventHandler<PlayerInitializeE
 	{
 		player.client().write(new SendMessageEvent("Welcome to " + Settings.SERVER_NAME + "."));
 		player.client().write(new SetPrivacySettingsEvent((byte)0, (byte)0, (byte)0));
-		player.client().write(new CloseInterfacesEvent());
+		//player.client().write(new CloseInterfacesEvent());
 		player.client().write(new SetTabInterfaceEvent((short)5855, (byte)0)); // TODO: do this better
 		player.client().write(new SetTabInterfaceEvent((short)3917, (byte)1));
 		player.client().write(new SetTabInterfaceEvent((short)638, (byte)2));

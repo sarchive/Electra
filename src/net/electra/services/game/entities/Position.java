@@ -28,6 +28,12 @@ public class Position implements Cloneable
 		this.z = position.z;
 		refresh();
 	}
+	
+	public void base(int width, int height)
+	{
+		x = x / width * width;
+		y = y / height * height;
+	}
 
 	public void refresh()
 	{

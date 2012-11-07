@@ -16,6 +16,13 @@
     - event: net.electra.services.game.events.ButtonClickEvent
       chain:
         - link: net.electra.events.handlers.EventDebugHandler
+        - link: net.electra.services.game.events.handlers.ButtonClickEventHandler
+    - event: net.electra.services.game.events.RegionInvalidatedEvent
+      chain:
+        - link: net.electra.services.game.events.handlers.RegionInvalidatedEventHandler
+    - event: net.electra.services.game.events.LogoutEvent
+      chain:
+        - link: net.electra.services.game.events.handlers.LogoutEventHandler
 # PotentialPlayer events
 - context: net.electra.services.login.PotentialPlayer
   handlers:

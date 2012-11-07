@@ -11766,8 +11766,8 @@ public final class client extends RSApplet {
 		aBoolean1159 = false;
 		aBoolean1160 = false;
 		anInt1171 = 1;
-		myUsername = "mopar";
-		myPassword = "bob";
+		myUsername = "electra";
+		myPassword = "yolojkswag";
 		genericLoadingError = false;
 		reportAbuseInterfaceID = -1;
 		aClass19_1179 = new NodeList();

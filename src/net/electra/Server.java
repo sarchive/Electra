@@ -1,57 +1,43 @@
 package net.electra;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.InetSocketAddress;
-import java.net.URL;
-import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.yaml.snakeyaml.Yaml;
-
 import net.electra.events.EventManager;
 import net.electra.net.Client;
-import net.electra.net.NetworkService;
-import net.electra.net.events.resolver.EventResolver;
+import net.electra.net.DisconnectReason;
 import net.electra.services.Service;
-import net.electra.services.game.GameService;
-import net.electra.services.login.LoginService;
 
-public class Server
+public abstract class Server implements Processable, Runnable
 {
 	private final HashMap<Integer, Service<?>> services = new HashMap<Integer, Service<?>>();
-	private Service<?>[] serviceCache = new Service<?>[0];
-	private final ServerSocketChannel serverChannel;
-	private Timer executionTimer = new Timer();
-	private final EventResolver eventResolver;
-	private final EventManager eventManager;
-	private final Selector selector;
-	private Thread currentThread;
-	private long tick = 0;
+	protected Service<?>[] serviceCache = new Service<?>[0];
+	protected final ServerSocketChannel serverChannel;
+	protected Timer executionTimer = new Timer();
+	protected final EventManager eventManager;
+	protected final Selector selector;
+	protected Thread currentThread;
+	protected long tick = 0;
 	
-	public Server(EventResolver eventResolver, EventManager eventManager) throws IOException
+	public Server(EventManager eventManager) throws IOException
 	{
-		this.eventResolver = eventResolver;
 		this.eventManager = eventManager;
-		this.selector = Selector.open(); // magically throwing ioexceptions
+		this.selector = Selector.open();
 		this.serverChannel = ServerSocketChannel.open();
 	}
 	
-	@SuppressWarnings({ "unchecked", "deprecation" })
+	public abstract void setup();
+	
+	/*@SuppressWarnings({ "unchecked", "deprecation" })
 	public static void main(String[] arguments)
 	{
 		System.setOut(new TimeLogger(System.out, new SimpleDateFormat("hh:mm:ss a")));
@@ -103,7 +89,7 @@ public class Server
 					{
 						if (hanging)
 						{
-							System.out.println("Server thread seems to be hanging. Dumping thread data and restarting...");
+							System.err.println("Server thread seems to be hanging. Dumping thread data and restarting...");
 							System.err.println("Name:        " + server.thread().getName());
 							System.err.println("State:       " + server.thread().getState());
 							System.err.println("Stack trace: ");
@@ -135,17 +121,21 @@ public class Server
 				}
 			}
 		}
+		catch (BindException ex)
+		{
+			System.err.println("Failed to bind to port. Exiting.");
+		}
 		catch (Exception ex)
 		{
 			ex.printStackTrace();
 		}
 		
 		System.out.println(Settings.SERVER_NAME + " server terminated");
-	}
+	}*/
 	
-	public void bind() throws IOException
+	public void bind(InetSocketAddress address) throws IOException
 	{
-		InetSocketAddress address = new InetSocketAddress(Settings.ADDRESS, Settings.PORT);
+		//InetSocketAddress address = new InetSocketAddress(Settings.ADDRESS, Settings.PORT);
 		System.out.println("Attempting to bind to " + address);
 		serverChannel.configureBlocking(false);
 		serverChannel.socket().bind(address);
@@ -153,7 +143,73 @@ public class Server
 		System.out.println("Listening on " + serverChannel.getLocalAddress());
 	}
 	
-	public void run() throws InterruptedException
+	public abstract boolean accept(Client client);
+	
+	@Override
+	public void process()
+	{
+		network();
+		
+		for (Service<?> svc : serviceCache)
+		{
+			svc.process();
+		}
+	}
+	
+	private void network()
+	{
+		try
+		{
+			selector.selectNow();
+			
+			for (SelectionKey selectionKey : selector.selectedKeys())
+			{
+				if (!selectionKey.isValid())
+				{
+					selectionKey.cancel(); // make sure it's cancelled, no harm in making sure.
+					continue;
+				}
+				
+				if (selectionKey.isValid() && selectionKey.isAcceptable())
+				{
+					SocketChannel socket = null;
+					
+					while ((socket = serverChannel.accept()) != null)
+					{
+						try
+						{
+							System.out.println("Accepting connection from " + socket.socket());
+							socket.configureBlocking(false);
+							SelectionKey key = socket.register(selector, SelectionKey.OP_READ);
+							Client client = new Client(key);
+							
+							if (!accept(client))
+							{
+								client.disconnect(DisconnectReason.INVALID_LOGIN);
+								selectionKey.cancel();
+							}
+						}
+						catch (Exception ex)
+						{
+							//ex.printStackTrace();
+							selectionKey.cancel();
+						}
+					}
+				}
+				
+				if (selectionKey.isValid() && selectionKey.isReadable())
+				{
+					((Client)selectionKey.attachment()).read();
+				}
+			}
+		}
+		catch (Exception ex)
+		{
+			ex.printStackTrace();
+		}
+	}
+	
+	/*public void run() throws InterruptedException
 	{
 		Runtime runtime = Runtime.getRuntime();
 		long sleepTime = 0;
@@ -161,12 +217,14 @@ public class Server
 		long interTime = 0;
 		long totalCycles = 0;
 		long interCycles = 0;
-
+		long sT = 0;
+		
 		System.out.println("Cycling server at a frequency of " + Settings.CYCLE_RATE + "ms");
 		
 		while (true)
 		{
 			executionTimer.reset();
+			sT = System.nanoTime();
 			
 			// begin cpu intensive stuff
 			// TODO: separate networking to improve performance. (anyone viewing this: know that i do know how to program and i'll implement it correctly)
@@ -197,14 +255,16 @@ public class Server
 			totalTime += executionTimer.elapsed();
 			sleepTime = Settings.CYCLE_RATE - executionTimer.elapsed();
 			
+			System.out.println("NANO: " + (System.nanoTime() - sT) + ", MS: " + executionTimer.elapsed());
+			
 			if (sleepTime > 0 && sleepTime <= Settings.CYCLE_RATE && executionTimer.elapsed() <= Settings.CYCLE_RATE)
 			{
 				Thread.sleep(sleepTime);
 			}
 		}
-	}
+	}*/
 	
-	@SuppressWarnings("unchecked")
+	/*@SuppressWarnings("unchecked")
 	public void network(Timer executionTimer)
 	{
 		try
@@ -293,7 +353,7 @@ public class Server
 		{
 			ex.printStackTrace();
 		}
-	}
+	}*/
 	
 	protected void rebuildServiceCache()
 	{
@@ -371,11 +431,6 @@ public class Server
 	public ServerSocketChannel channel()
 	{
 		return serverChannel;
-	}
-	
-	public EventResolver resolver()
-	{
-		return eventResolver;
 	}
 	
 	public Thread thread()

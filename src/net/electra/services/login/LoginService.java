@@ -4,7 +4,6 @@ import java.util.ArrayList;
 
 import net.electra.Server;
 import net.electra.net.*;
-import net.electra.net.events.NetworkEvent;
 import net.electra.net.events.resolver.NetworkEventData;
 import net.electra.services.login.events.ConnectEvent;
 import net.electra.services.login.events.ReconnectEvent;
@@ -13,13 +12,12 @@ public class LoginService extends NetworkService<PotentialPlayer, Client>
 {
 	private final ArrayList<PotentialPlayer> logins = new ArrayList<PotentialPlayer>();
 	
-	@SuppressWarnings("unchecked")
 	public LoginService(Server server)
 	{
 		super(server);
-		networkEvents().put(16, new NetworkEventData(16, -1, (Class<NetworkEvent>)((Class<?>)ConnectEvent.class)));
-		networkEvents().put(18, new NetworkEventData(18, -1, (Class<NetworkEvent>)((Class<?>)ReconnectEvent.class)));
-		networkEvents().putAll(server.resolver().resolve("net.electra.services.login.events"));
+		setup(new NetworkEventData(16, -1, ConnectEvent.class));
+		setup(new NetworkEventData(18, -1, ReconnectEvent.class));
+		//networkEvents().putAll(server.resolver().resolve("net.electra.services.login.events"));
 	}
 
 	@Override

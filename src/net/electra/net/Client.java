@@ -156,8 +156,8 @@ public class Client
 					break;
 				}
 				
+				System.out.println("Received " + event.getClass().getSimpleName() + " (id: " + id + ", len: " + length + ")");
 				event.parse(new DataBuffer(inbound.get(length)));
-				//System.out.println("Received " + event.getClass().getSimpleName() + " (id: " + id + ", len: " + length + ")");
 				receiver.fire(event);
 			}
 			
@@ -182,6 +182,14 @@ public class Client
 	
 	public <T extends NetworkEvent> void write(T event)
 	{
+		receiver.fire(event);
+		
+		if (event.chainBroken())
+		{
+			System.out.println(event + ": chain broken");
+			return;
+		}
+		
 		if (event.id() != -1)
 		{
 			outbound.putHeader(event.id());

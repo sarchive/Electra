@@ -7,7 +7,6 @@ import net.electra.Settings;
 import net.electra.net.Client;
 import net.electra.net.DisconnectReason;
 import net.electra.net.NetworkService;
-import net.electra.net.events.NetworkEvent;
 import net.electra.net.events.resolver.NetworkEventData;
 import net.electra.services.game.entities.players.Player;
 import net.electra.services.game.events.MovementEvent;
@@ -17,16 +16,35 @@ import net.electra.services.login.PotentialPlayer;
 public class GameService extends NetworkService<Player, PotentialPlayer>
 {
 	private final HashMap<String, Integer> usernames = new HashMap<String, Integer>(); // using hashmaps to match usernames to players is much faster than iterating through every player
+	//private final HashMap<Position, Region> regions = new HashMap<Position, Region>();
+	//private final HashMap<Position, ArrayList<Integer>> tiles = new HashMap<Position, ArrayList<Integer>>(); // just testing
 	private final Player[] players = new Player[Settings.PLAYER_CAPACITY];
 	private int playerCount = 0;
 	
-	@SuppressWarnings("unchecked")
 	public GameService(Server server)
 	{
 		super(server);
-		networkEvents().put(98, new NetworkEventData(98, -1, (Class<NetworkEvent>)((Class<?>)MovementEvent.class)));
-		networkEvents().putAll(server.resolver().resolve("net.electra.services.game.events"));
+		setup(new NetworkEventData(98, -1, MovementEvent.class));
+		//networkEvents().putAll(server.resolver().resolve("net.electra.services.game.events"));
 	}
+	
+	/*public ArrayList<Integer> tile(Position position)
+	{
+		return tiles.get(position);
+	}
+	
+	public Region region(Position position)
+	{
+		position = (Position)position.clone();
+		position.base(Region.SIZE, Region.SIZE);
+		
+		if (!regions.containsKey(position))
+		{
+			regions.put(position, new Region(position, this));
+		}
+		
+		return regions.get(position);
+	}*/
 
 	@Override
 	public Player register(PotentialPlayer potential)
@@ -62,6 +80,7 @@ public class GameService extends NetworkService<Player, PotentialPlayer>
 	@Override
 	public void unregister(Player player)
 	{
+		//region(player.position()).players().remove(player);
 		players[player.id()] = null;
 		usernames.remove(player.username());
 		playerCount--;
@@ -106,6 +125,7 @@ public class GameService extends NetworkService<Player, PotentialPlayer>
 			}
 			
 			player.mask().clear();
+			player.placementRequired(false);
 			player.client().flush();
 		}
 	}

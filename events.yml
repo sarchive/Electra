@@ -100,11 +100,13 @@
     - name: ShowInterfaceEvent
       op: 97
       payload:
-        - id: short
+        - interface: short
     - name: SetCurrentTabEvent
       op: 106
       payload:
         - tab: byte
+    - name: LogoutEvent
+      op: 109
     - name: SetSkillLevelEvent
       op: 134
       payload:
@@ -123,7 +125,7 @@
       op: 249
       payload:
         - members: boolean
-        - id: short
+        - number: short
     - name: SendMessageEvent
       op: 253
       payload:

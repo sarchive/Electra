@@ -1,6 +1,6 @@
 package net.electra.services.game.entities.players;
 
-import java.lang.ref.SoftReference;
+import java.lang.ref.WeakReference;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -13,8 +13,8 @@ import net.electra.services.game.entities.Position;
 
 public class Player extends Character implements ClientAdapter
 {
-	private final List<SoftReference<Player>> localPlayers = new LinkedList<SoftReference<Player>>();
-	private final Queue<SoftReference<Player>> newPlayers = new LinkedList<SoftReference<Player>>();
+	private final List<WeakReference<Player>> localPlayers = new LinkedList<WeakReference<Player>>();
+	private final Queue<WeakReference<Player>> newPlayers = new LinkedList<WeakReference<Player>>();
 	private final String username;
 	private final int uid;
 	private Client client;
@@ -32,12 +32,12 @@ public class Player extends Character implements ClientAdapter
 		client.associate(this);
 	}
 	
-	public List<SoftReference<Player>> localPlayers()
+	public List<WeakReference<Player>> localPlayers()
 	{
 		return localPlayers;
 	}
 	
-	public Queue<SoftReference<Player>> newPlayers()
+	public Queue<WeakReference<Player>> newPlayers()
 	{
 		return newPlayers;
 	}

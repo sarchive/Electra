@@ -8,11 +8,12 @@ public class NetworkEventData
 	private final int operator;
 	private final int length;
 	
-	public NetworkEventData(int operator, int length, Class<NetworkEvent> event)
+	@SuppressWarnings("unchecked")
+	public NetworkEventData(int operator, int length, Class<?> event)
 	{
 		this.operator = operator;
 		this.length = length;
-		this.event = event;
+		this.event = (Class<NetworkEvent>)event;
 	}
 	
 	public NetworkEvent newInstance() throws InstantiationException, IllegalAccessException

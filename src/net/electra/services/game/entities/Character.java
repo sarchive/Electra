@@ -1,6 +1,7 @@
 package net.electra.services.game.entities;
 
 import net.electra.services.game.GameService;
+import net.electra.services.game.events.RegionInvalidatedEvent;
 
 public abstract class Character extends Entity
 {
@@ -38,20 +39,39 @@ public abstract class Character extends Entity
 		{
 			secondDirection = Direction.NONE;
 		}
-
+		
+		if (regionRequired())
+		{
+			fire(new RegionInvalidatedEvent());
+		}
+	}
+	
+	public boolean regionRequired()
+	{
+		if (placementRequired)
+		{
+			return true;
+		}
+		
 		int deltaX = position.x() - position.regionX() * 8;
 		int deltaY = position.y() - position.regionY() * 8;
 		
 		if (deltaX < 16 || deltaX >= 88 || deltaY < 16 || deltaY > 88)
 		{
-			position.refresh();
-			placementRequired = true;
+			return true;
 		}
+		
+		return false;
 	}
 	
 	public Position position()
 	{
 		return position;
+	}
+	
+	public boolean blockRequired()
+	{
+		return !mask.isEmpty();
 	}
 	
 	public boolean movementRequired()

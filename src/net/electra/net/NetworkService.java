@@ -19,6 +19,11 @@ public abstract class NetworkService<H, A> extends Service<H>
 	public abstract H register(A client);
 	public abstract void unregister(H client);
 	
+	public void setup(NetworkEventData data)
+	{
+		collection.put(data.operator(), data);
+	}
+	
 	public Map<Integer, NetworkEventData> networkEvents()
 	{
 		return collection;
