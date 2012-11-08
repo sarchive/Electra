@@ -17,7 +17,6 @@ public class LoginService extends NetworkService<PotentialPlayer, Client>
 		super(server);
 		setup(new NetworkEventData(16, -1, ConnectEvent.class));
 		setup(new NetworkEventData(18, -1, ReconnectEvent.class));
-		//networkEvents().putAll(server.resolver().resolve("net.electra.services.login.events"));
 	}
 
 	@Override

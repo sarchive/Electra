@@ -1,5 +1,6 @@
 package net.electra.io;
 
+// essentially just for lots and lots of single bit flags.
 public class BitStore
 {
 	private int count = 0;

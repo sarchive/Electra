@@ -16,7 +16,7 @@ public class PlayerInitializeEventHandler extends EventHandler<PlayerInitializeE
 	{
 		player.client().write(new SendMessageEvent("Welcome to " + Settings.SERVER_NAME + "."));
 		player.client().write(new SetPrivacySettingsEvent((byte)0, (byte)0, (byte)0));
-		//player.client().write(new CloseInterfacesEvent());
+		//player.client().write(new CloseInterfacesEvent()); // TODO: figure out why you can't type after sending this
 		player.client().write(new SetTabInterfaceEvent((short)5855, (byte)0)); // TODO: do this better
 		player.client().write(new SetTabInterfaceEvent((short)3917, (byte)1));
 		player.client().write(new SetTabInterfaceEvent((short)638, (byte)2));

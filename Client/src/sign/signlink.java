@@ -121,7 +121,7 @@ public final class signlink
 			{
 				try
 				{
-					System.out.println("urlstream");
+					System.out.println("url request for " + urlreq);
 					urlstream = new DataInputStream((new URL(mainapp.getCodeBase(), urlreq)).openStream());
 				}
 				catch(Exception _ex)
@@ -139,20 +139,15 @@ public final class signlink
 
 	}
 
-	private static String findcachedir()
-	{
-		return "./cache/";
-	}
-
-	public static String findcachedirORIG()
+	public static String findcachedir()
 	{
 		String as[] = {
-			"c:/windows/", "c:/winnt/", "d:/windows/", "d:/winnt/", "e:/windows/", "e:/winnt/", "f:/windows/", "f:/winnt/", "c:/", "~/",
-			"/tmp/", "", "c:/rscache", "/rscache"
+			"", "c:/windows/", "c:/winnt/", "d:/windows/", "d:/winnt/", "e:/windows/", "e:/winnt/", "f:/windows/", "f:/winnt/", "c:/", "~/",
+			"/tmp/", "c:/rscache", "/rscache"
 		};
 		if(storeid < 32 || storeid > 34)
-			storeid = 32;
-		String s = ".file_store_" + storeid;
+			storeid = 32; // 34 would be the in development cache, i assume
+		String s = ".electra_file_store_" + storeid;
 		for(int i = 0; i < as.length; i++)
 			try
 			{

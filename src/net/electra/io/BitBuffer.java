@@ -1,6 +1,6 @@
 package net.electra.io;
 
-// we store bit data, and nothing else.
+// we store bit data, and nothing else. TODO: add reading
 public class BitBuffer
 {
 	public static final int[] BITMASKS = {

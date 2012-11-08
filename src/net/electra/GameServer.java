@@ -1,10 +1,13 @@
 package net.electra;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.URL;
 import java.nio.ByteBuffer;
+import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Map;
 
@@ -24,7 +27,27 @@ public class GameServer extends Server
 	{
 		super(eventManager);
 	}
+	
+	@SuppressWarnings("unchecked")
+	public static void main(String[] args)
+	{
+		System.setOut(new TimeLogger(System.out, new SimpleDateFormat("hh:mm:ss a")));
+		System.setErr(new TimeLogger(System.out, new SimpleDateFormat("hh:mm:ss a")));
+		Settings.load(new File("./server.conf"));
+		ServerManager serverManager = new ServerManager();
 
+		try
+		{
+			EventManager eventManager = new EventManager((List<Map<String, Object>>)new Yaml().load(new FileInputStream(new File("./handlers.yml"))));
+			serverManager.register(new GameServer(eventManager));
+			serverManager.run();
+		}
+		catch (Exception ex)
+		{
+			ex.printStackTrace();
+		}
+	}
+	
 	@Override
 	public void run()
 	{
@@ -131,31 +154,24 @@ public class GameServer extends Server
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public void setup()
+	public void setup() throws IOException
 	{
-		try
-		{
-			register(Service.LOGIN, new LoginService(this));
-			register(Service.GAME, new GameService(this));
-			bind(new InetSocketAddress(Settings.ADDRESS, Settings.PORT));
-			InputStream asdf = (InputStream)(new URL("jar:file:./lib/events.jar!/built-events.yml").openConnection()).getContent();
-			byte[] allData;
-			allData = new byte[asdf.available()];
-			asdf.read(allData);
-			EventResolver eventResolver = new EventResolver((List<Map<String, Object>>)new Yaml().load(new String(allData)));
+		register(Service.LOGIN, new LoginService(this));
+		register(Service.GAME, new GameService(this));
+		bind(new InetSocketAddress(Settings.ADDRESS, Settings.PORT));
+		InputStream asdf = (InputStream)(new URL("jar:file:./lib/events.jar!/built-events.yml").openConnection()).getContent();
+		byte[] allData;
+		allData = new byte[asdf.available()];
+		asdf.read(allData);
+		EventResolver eventResolver = new EventResolver((List<Map<String, Object>>)new Yaml().load(new String(allData)));
 
-			for (Service<?> service : serviceCache)
-			{
-				if (service instanceof NetworkService)
-				{
-					String name = service.getClass().getName();
-					((NetworkService<?, ?>)service).networkEvents().putAll(eventResolver.resolve(name.substring(0, name.lastIndexOf(".")) + ".events"));
-				}
-			}
-		}
-		catch (Exception ex)
+		for (Service<?> service : serviceCache)
 		{
-			ex.printStackTrace();
+			if (service instanceof NetworkService)
+			{
+				String name = service.getClass().getName();
+				((NetworkService<?, ?>)service).networkEvents().putAll(eventResolver.resolve(name.substring(0, name.lastIndexOf(".")) + ".events"));
+			}
 		}
 	}
 }

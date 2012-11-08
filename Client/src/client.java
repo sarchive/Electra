@@ -34,17 +34,17 @@ public final class client extends RSApplet {
 
 	private void connectServer()
 	{
-/*	  int j = 5;
+		int j = 5;
 		expectedCRCs[8] = 0;
 		int k = 0;
 		while(expectedCRCs[8] == 0)
 		{
 			String s = "Unknown problem";
-			drawLoadingText(20, (byte)4, "Connecting to web server");
+			drawLoadingText(20, "Connecting to web server");
 			try
 			{
 				DataInputStream datainputstream = openJagGrabInputStream("crc" + (int)(Math.random() * 99999999D) + "-" + 317);
-				Stream class30_sub2_sub2 = new Stream(new byte[40], 891);
+				Stream class30_sub2_sub2 = new Stream(new byte[40]);
 				datainputstream.readFully(class30_sub2_sub2.buffer, 0, 40);
 				datainputstream.close();
 				for(int i1 = 0; i1 < 9; i1++)
@@ -85,11 +85,11 @@ public final class client extends RSApplet {
 				{
 					if(k >= 10)
 					{
-						drawLoadingText(10, (byte)4, "Game updated - please reload page");
+						drawLoadingText(10, "Game updated - please reload page");
 						l = 10;
 					} else
 					{
-						drawLoadingText(10, (byte)4, s + " - Will retry in " + l + " secs.");
+						drawLoadingText(10, s + " - Will retry in " + l + " secs.");
 					}
 					try
 					{
@@ -104,7 +104,6 @@ public final class client extends RSApplet {
 				aBoolean872 = !aBoolean872;
 			}
 		}
- */
 	}
 	
 	private boolean menuHasAddFriend(int j)
@@ -3263,13 +3262,17 @@ public final class client extends RSApplet {
 				abyte0 = decompressors[0].decompress(i);
 		}
 		catch(Exception _ex) { }
-		if(abyte0 != null)
+		// TODO: add updating
+		/*if(abyte0 != null)
 		{
-	//		aCRC32_930.reset();
-	//		aCRC32_930.update(abyte0);
-	//		int i1 = (int)aCRC32_930.getValue();
-	//		if(i1 != j)
-		}
+			aCRC32_930.reset();
+			aCRC32_930.update(abyte0);
+			int i1 = (int)aCRC32_930.getValue();
+			if(i1 != j)
+			{
+				abyte0 = null;
+			}
+		}*/
 		if(abyte0 != null)
 		{
 			StreamLoader streamLoader = new StreamLoader(abyte0);
@@ -3321,7 +3324,7 @@ public final class client extends RSApplet {
 				{
 					decompressors[0] = null;
 				}
-   /*			 if(abyte0 != null)
+				/*if(abyte0 != null)
 				{
 					aCRC32_930.reset();
 					aCRC32_930.update(abyte0);
@@ -3332,8 +3335,7 @@ public final class client extends RSApplet {
 						j1++;
 						s2 = "Checksum error: " + i3;
 					}
-				}
-  */
+				}*/
 			}
 			catch(IOException ioexception)
 			{
@@ -6643,7 +6645,7 @@ public final class client extends RSApplet {
 		}
 		try
 		{
-			connectServer();
+			//connectServer(); // TODO: add jaggrab
 			titleStreamLoader = streamLoaderForName(1, "title screen", "title", expectedCRCs[1], 25);
 			aTextDrawingArea_1270 = new TextDrawingArea(false, "p11_full", titleStreamLoader);
 			aTextDrawingArea_1271 = new TextDrawingArea(false, "p12_full", titleStreamLoader);
@@ -9360,11 +9362,12 @@ public final class client extends RSApplet {
 	private DataInputStream openJagGrabInputStream(String s)
 		throws IOException
 	{
- //	   if(!aBoolean872)
- //		   if(signlink.mainapp != null)
- //			   return signlink.openurl(s);
- //		   else
- //			   return new DataInputStream((new URL(getCodeBase(), s)).openStream());
+		// this is code that would normally try to make an http request before jaggrab
+		/*if(!aBoolean872)
+			if(signlink.mainapp != null)
+				return signlink.openurl(s);
+			else
+				return new DataInputStream((new URL(getCodeBase(), s)).openStream());*/
 		if(aSocket832 != null)
 		{
 			try
@@ -9374,7 +9377,7 @@ public final class client extends RSApplet {
 			catch(Exception _ex) { }
 			aSocket832 = null;
 		}
-		aSocket832 = openSocket(43595);
+		aSocket832 = openSocket(43595); // if we can't make an http connection we attempt a jaggrab connection
 		aSocket832.setSoTimeout(10000);
 		java.io.InputStream inputstream = aSocket832.getInputStream();
 		OutputStream outputstream = aSocket832.getOutputStream();

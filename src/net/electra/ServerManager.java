@@ -1,67 +1,51 @@
 package net.electra;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
-import org.yaml.snakeyaml.Yaml;
-
-import net.electra.events.EventManager;
+import net.electra.services.Service;
 
 public class ServerManager implements Runnable
 {
 	private final HashMap<Class<? extends Server>, Server> servers = new HashMap<Class<? extends Server>, Server>();
-	
-	@SuppressWarnings("unchecked")
-	public static void main(String[] args)
-	{
-		System.setOut(new TimeLogger(System.out, new SimpleDateFormat("hh:mm:ss a")));
-		System.setErr(new TimeLogger(System.out, new SimpleDateFormat("hh:mm:ss a")));
-		Settings.load(new File("./server.conf"));
-		ServerManager serverManager = new ServerManager();
-
-		try
-		{
-			EventManager eventManager = new EventManager((List<Map<String, Object>>)new Yaml().load(new FileInputStream(new File("./handlers.yml"))));
-			serverManager.register(new GameServer(eventManager));
-			serverManager.run();
-		}
-		catch (Exception ex)
-		{
-			// TODO Auto-generated catch block
-			ex.printStackTrace();
-		}
-	}
 
 	@Override
 	public void run()
 	{
 		try
 		{
+			Runtime runtime = Runtime.getRuntime();
 			System.out.println(Settings.SERVER_NAME + " ----------------------------------------------");
-			System.out.println("Server started:  " + new Date());
-			System.out.println("Build date:      " + new Date(new File(getClass().getClassLoader().getResource(getClass().getCanonicalName().replace('.', '/') + ".class").toURI()).lastModified()));
-			System.out.println("Client version:  " + Settings.MINIMUM_CLIENT_VERSION);
-			System.out.println("Server version:  " + Settings.SERVER_VERSION);
+			System.out.println("Server started:     " + new Date());
+			System.out.println("Build date:         " + new Date(new File(getClass().getClassLoader().getResource(getClass().getCanonicalName().replace('.', '/') + ".class").toURI()).lastModified()));
+			System.out.println("Client version:     " + Settings.MINIMUM_CLIENT_VERSION);
+			System.out.println("Server version:     " + Settings.SERVER_VERSION);
+			System.out.println("Memory used:        " + (runtime.totalMemory() - runtime.freeMemory()) + " bytes");
+			System.out.println("Memory (total/max): " + runtime.totalMemory() + "/" + runtime.maxMemory() + " bytes");
 			System.out.println("---------------------------------------------- " + Settings.SERVER_NAME);
 			
 			for (Server server : servers.values())
 			{
+				System.out.println("Setting up " + server.getClass().getSimpleName());
 				server.setup();
+				System.out.println("Services active:");
+				
+				for (Service<?> service : server.serviceCache)
+				{
+					System.out.println("\t" + service.getClass().getSimpleName());
+				}
+				
 				server.thread(new Thread(server));
+				server.thread().setName(Settings.SERVER_NAME + "/" + server.getClass().getSimpleName());
 				server.thread().start();
 			}
 		}
 		catch (Exception ex)
 		{
 			ex.printStackTrace();
+			System.out.println(Settings.SERVER_NAME + " server terminated");
 		}
-		
-		System.out.println(Settings.SERVER_NAME + " server terminated");
 	}
 	
 	public void register(Server server)

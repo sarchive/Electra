@@ -61,8 +61,10 @@ public class ConnectEvent extends NetworkEvent
 		for (int i = 0; i < checksums.length; i++)
 		{
 			checksums[i] = buffer.getInt();
+			System.out.println("Checksum " + i + ": " + checksums[i]); // TODO: add checksum checking, jaggrab, ondemand, etc.
 		}
 		
+		// check the length reported by the client with our expected size based on how big the packet actually is
 		if (buffer.getUnsigned() != expected)
 		{
 			throw new IllegalArgumentException("The expected encrypted block size does not equal the expected block size.");
@@ -70,6 +72,7 @@ public class ConnectEvent extends NetworkEvent
 		
 		DataBuffer decryptedBlock = new DataBuffer(new BigInteger(buffer.get(expected)).modPow(Settings.PRIVATE_RSA_EXPONENT, Settings.PRIVATE_RSA_MODULUS).toByteArray());
 		
+		// if this value isn't 10 then we can assume that decrypting the data didn't work. this is just a byte used for verification of the data's integrity
 		if (decryptedBlock.get() != 10)
 		{
 			throw new IllegalArgumentException("Encrypted block failed to decrypt, probably invalid public/private keyset.");
@@ -82,7 +85,7 @@ public class ConnectEvent extends NetworkEvent
 			randomSeed[i] = decryptedBlock.getInt();
 		}
 		
-		this.uid = decryptedBlock.getInt();
+		this.uid = decryptedBlock.getInt(); // the uid is used only for reconnection, nothing else.
 		this.username = decryptedBlock.getString();
 		this.password = decryptedBlock.getString();
 	}
