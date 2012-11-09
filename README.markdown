@@ -12,6 +12,7 @@ Electra is a server that is created to be intuitive, well designed, and fast. It
 
  * [SnakeYAML](http://code.google.com/p/snakeyaml/) - YAML parser and emitter for configuration files
  * [Apache Commons BCEL](http://commons.apache.org/bcel/) - Bytecode Engineering Library for event 'compiler'
+ * [Apache Commons Compress](http://commons.apache.org/compress/) - For BZip2 compression/decompression in the cache
 
 ## Features
  * Math parser and evaluator, used in the compiler for converting expressions into bytecode for array lengths but can also be used in your projects as well. You can translate infix (the notation humans use) to postfix notation. From postfix notation you can evaluate the expression.

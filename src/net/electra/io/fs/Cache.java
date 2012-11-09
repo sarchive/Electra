@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.nio.channels.FileLock;
 import java.util.ArrayList;
 
 import net.electra.io.DataBuffer;
@@ -18,17 +17,19 @@ public class Cache implements Closeable
 
 	private final RandomAccessFile dataFile;
 	private final CacheIndex[] indices;
-	private final FileLock dataLock;
 	
 	public Cache(File directory) throws IOException
 	{
-		this.dataFile = new RandomAccessFile(directory.getAbsolutePath() + "main_file_cache.dat", "r");
-		this.dataLock = dataFile.getChannel().lock();
+		System.out.println("Loading cache from " + directory.getPath());
+		File cacheFile = new File(directory.getPath() + "/main_file_cache.dat");
+		this.dataFile = new RandomAccessFile(cacheFile, "r");
+		System.out.println("Cache found: " + cacheFile.getPath());
 		ArrayList<CacheIndex> temp = new ArrayList<CacheIndex>();
+		int totalEntries = 0;
 		
 		for (int i = 0; i < 255; i ++)
 		{
-			File indexFile = new File(directory.getAbsolutePath() + "main_file_cache.idx" + i);
+			File indexFile = new File(directory.getPath() + "/main_file_cache.idx" + i);
 			
 			if (indexFile.exists())
 			{
@@ -39,9 +40,12 @@ public class Cache implements Closeable
 				fis.close();
 				idx.build(new DataBuffer(data));
 				temp.add(idx);
+				System.out.println("\tIndex " + idx.id() + " found and built with " + idx.size() + " entries");
+				totalEntries += idx.size();
 			}
 		}
 		
+		System.out.println("Total files indexed in cache: " + totalEntries);
 		this.indices = temp.toArray(new CacheIndex[0]);
 	}
 	
@@ -98,10 +102,19 @@ public class Cache implements Closeable
 		return new CacheFile(descriptor, fileBuffer);
 	}
 	
+	public long dataLength() throws IOException
+	{
+		return dataFile.length();
+	}
+	
+	public int indexLength()
+	{
+		return indices.length;
+	}
+	
 	@Override
 	public void close() throws IOException
 	{
-		dataLock.release();
 		dataFile.close();
 	}
 }

@@ -34,10 +34,10 @@ public class GameServer extends Server
 		System.setOut(new TimeLogger(System.out, new SimpleDateFormat("hh:mm:ss a")));
 		System.setErr(new TimeLogger(System.out, new SimpleDateFormat("hh:mm:ss a")));
 		Settings.load(new File("./server.conf"));
-		ServerManager serverManager = new ServerManager();
 
 		try
 		{
+			ServerManager serverManager = new ServerManager();
 			EventManager eventManager = new EventManager((List<Map<String, Object>>)new Yaml().load(new FileInputStream(new File("./handlers.yml"))));
 			serverManager.register(new GameServer(eventManager));
 			serverManager.run();
