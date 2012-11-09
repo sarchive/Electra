@@ -13,5 +13,6 @@
 			<attribute name="javadoc_location" value="http://snakeyamlrepo.appspot.com/releases/1.10/site/apidocs/"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="lib/commons-compress-1.4.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

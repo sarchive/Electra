@@ -9,6 +9,7 @@ import net.electra.services.Service;
 public class ServerManager implements Runnable
 {
 	private final HashMap<Class<? extends Server>, Server> servers = new HashMap<Class<? extends Server>, Server>();
+	private final ThreadGroup serverThreadGroup = new ThreadGroup("SRVDS");
 
 	@Override
 	public void run()
@@ -24,6 +25,8 @@ public class ServerManager implements Runnable
 			System.out.println("Memory used:        " + (runtime.totalMemory() - runtime.freeMemory()) + " bytes");
 			System.out.println("Memory (total/max): " + runtime.totalMemory() + "/" + runtime.maxMemory() + " bytes");
 			System.out.println("---------------------------------------------- " + Settings.SERVER_NAME);
+			serverThreadGroup.setDaemon(true);
+			serverThreadGroup.setMaxPriority(Thread.MAX_PRIORITY);
 			
 			for (Server server : servers.values())
 			{
@@ -36,9 +39,16 @@ public class ServerManager implements Runnable
 					System.out.println("\t" + service.getClass().getSimpleName());
 				}
 				
-				server.thread(new Thread(server));
-				server.thread().setName(Settings.SERVER_NAME + "/" + server.getClass().getSimpleName());
+				server.thread(new Thread(serverThreadGroup, server, Settings.SERVER_NAME + "/" + server.getClass().getSimpleName()));
+				server.thread().setPriority(Thread.MAX_PRIORITY);
 				server.thread().start();
+			}
+			
+			Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
+			
+			while (true)
+			{
+				Thread.sleep(1);
 			}
 		}
 		catch (Exception ex)

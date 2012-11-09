@@ -22,7 +22,7 @@ public abstract class Server implements Processable, Runnable
 	private final HashMap<Integer, Service<?>> services = new HashMap<Integer, Service<?>>();
 	protected Service<?>[] serviceCache = new Service<?>[0];
 	protected final ServerSocketChannel serverChannel;
-	protected Timer executionTimer = new Timer();
+	protected final Timer executionTimer = new Timer();
 	protected final EventManager eventManager;
 	protected final Selector selector;
 	protected Thread currentThread;

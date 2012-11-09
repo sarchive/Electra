@@ -277,6 +277,11 @@ public final class DataBuffer
 		return putNumber(value, 2);
 	}
 	
+	public DataBuffer putTribyte(int value)
+	{
+		return putNumber(value, 3);
+	}
+	
 	public DataBuffer putInt(int value)
 	{
 		return putNumber(value, 4);
@@ -316,6 +321,12 @@ public final class DataBuffer
 	public DataBuffer reset()
 	{
 		position = mark;
+		return this;
+	}
+	
+	public DataBuffer skip(int amount)
+	{
+		position += amount;
 		return this;
 	}
 	
