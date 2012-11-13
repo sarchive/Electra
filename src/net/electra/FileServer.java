@@ -29,12 +29,12 @@ public class FileServer extends Server
 	public void run()
 	{
 		try
-    	{
-    		while (true)
-    		{
-    			process();
-    			Thread.sleep(50);
-    		}
+		{
+			while (true)
+			{
+				process();
+				Thread.sleep(50);
+			}
 		}
 		catch (Exception ex)
 		{

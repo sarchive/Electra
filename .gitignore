@@ -4,6 +4,8 @@
 .mid
 .dat
 .idx*
+.electra_file_store_32
+.electra_file_Store_32/
 
 #########################
 ## Class files         ##
@@ -11,6 +13,7 @@
 tests/
 bin/
 .class
+client.jar
 
 #########################
 ## OS generated files  ##
