@@ -34,11 +34,12 @@ public class GameServer extends Server
 		System.setOut(new TimeLogger(System.out, new SimpleDateFormat("hh:mm:ss a")));
 		System.setErr(new TimeLogger(System.out, new SimpleDateFormat("hh:mm:ss a")));
 		Settings.load(new File("./server.conf"));
-
+		
 		try
 		{
 			ServerManager serverManager = new ServerManager();
 			EventManager eventManager = new EventManager((List<Map<String, Object>>)new Yaml().load(new FileInputStream(new File("./handlers.yml"))));
+			serverManager.register(new FileServer(eventManager));
 			serverManager.register(new GameServer(eventManager));
 			serverManager.run();
 		}
@@ -158,7 +159,8 @@ public class GameServer extends Server
 	{
 		register(Service.LOGIN, new LoginService(this));
 		register(Service.GAME, new GameService(this));
-		bind(new InetSocketAddress(Settings.ADDRESS, Settings.PORT));
+		//register(Service.JAGGRAB, new JagGrabService(this));
+		bind(new InetSocketAddress(Settings.GAME_SERVER_ADDRESS, Settings.GAME_SERVER_PORT));
 		InputStream asdf = (InputStream)(new URL("jar:file:./lib/events.jar!/built-events.yml").openConnection()).getContent();
 		byte[] allData;
 		allData = new byte[asdf.available()];

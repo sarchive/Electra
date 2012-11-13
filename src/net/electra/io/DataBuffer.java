@@ -359,8 +359,11 @@ public final class DataBuffer
 	public DataBuffer compact()
 	{
 		int newLength = length - position;
-		System.arraycopy(buffer, position, buffer, 0, newLength);
+		byte[] temp = new byte[newLength];
+		System.arraycopy(buffer, position, temp, 0, newLength);
 		length = newLength;
+		position = length;
+		buffer = temp;
 		return this;
 	}
 	

@@ -44,7 +44,7 @@ public final class client extends RSApplet {
 			try
 			{
 				DataInputStream datainputstream = openJagGrabInputStream("crc" + (int)(Math.random() * 99999999D) + "-" + 317);
-				Stream class30_sub2_sub2 = new Stream(new byte[40]);
+				Stream class30_sub2_sub2 = new Stream(new byte[9 * 4 + 4]); // 9 int checksum + 1 int hash
 				datainputstream.readFully(class30_sub2_sub2.buffer, 0, 40);
 				datainputstream.close();
 				for(int i1 = 0; i1 < 9; i1++)
@@ -57,7 +57,7 @@ public final class client extends RSApplet {
 
 				if(j1 != k1)
 				{
-					s = "checksum problem";
+					s = "Checksum hash mismatch";
 					expectedCRCs[8] = 0;
 				}
 			}
@@ -68,12 +68,12 @@ public final class client extends RSApplet {
 			}
 			catch(IOException _ex)
 			{
-				s = "connection problem";
+				s = "Connection problem";
 				expectedCRCs[8] = 0;
 			}
 			catch(Exception _ex)
 			{
-				s = "logic problem";
+				s = "Logic problem";
 				expectedCRCs[8] = 0;
 				if(!signlink.reporterror)
 					return;
@@ -97,7 +97,6 @@ public final class client extends RSApplet {
 					}
 					catch(Exception _ex) { }
 				}
-
 				j *= 2;
 				if(j > 60)
 					j = 60;
@@ -2385,6 +2384,11 @@ public final class client extends RSApplet {
 
 	public static void main(String args[])
 	{
+		if (args.length == 0)
+		{
+			args = new String[] { "10", "0", "highmem", "members", "32" };
+		}
+		
 		try
 		{
 			System.out.println("RS2 user client - release #" + 317);
@@ -3251,6 +3255,8 @@ public final class client extends RSApplet {
 		crossIndex = 0;
 		return true;
 	}
+	
+	private CRC32 aCRC32_930 = new CRC32();
 
 	private StreamLoader streamLoaderForName(int i, String s, String s1, int j, int k)
 	{
@@ -3263,16 +3269,17 @@ public final class client extends RSApplet {
 		}
 		catch(Exception _ex) { }
 		// TODO: add updating
-		/*if(abyte0 != null)
+		if(abyte0 != null)
 		{
 			aCRC32_930.reset();
 			aCRC32_930.update(abyte0);
 			int i1 = (int)aCRC32_930.getValue();
-			if(i1 != j)
+			if(i1 != j) // j = expected checksum (server) vs actual checksum (client's cache)
 			{
+				System.out.println("checksum mismatch");
 				abyte0 = null;
 			}
-		}*/
+		}
 		if(abyte0 != null)
 		{
 			StreamLoader streamLoader = new StreamLoader(abyte0);
@@ -3287,22 +3294,26 @@ public final class client extends RSApplet {
 			try
 			{
 				int k1 = 0;
-				DataInputStream datainputstream = openJagGrabInputStream(s1 + j);
-				byte abyte1[] = new byte[6];
-				datainputstream.readFully(abyte1, 0, 6);
-				Stream stream = new Stream(abyte1);
-				stream.currentOffset = 3;
-				int i2 = stream.read3Bytes() + 6;
-				int j2 = 6;
-				abyte0 = new byte[i2];
-				System.arraycopy(abyte1, 0, abyte0, 0, 6);
-
-				while(j2 < i2) 
+				System.out.println("jaggrab for " + (s1 + j));
+				DataInputStream datainputstream = openJagGrabInputStream(s1 + j); // add checksum onto the end, for whatever reason, probably for transfer optimization
+				byte abyte1[] = new byte[6]; // store 6 bytes
+				datainputstream.readFully(abyte1, 0, 6); // read 6 bytes from offset 0 (begin)
+				Stream stream = new Stream(abyte1); // create stream out of the data we just read
+				stream.currentOffset = 3; // set the stream's position to 3
+				int i2 = stream.read3Bytes() + 6; // read 3 bytes and add 6
+				System.out.println("file size: " + i2);
+				int j2 = 6; // index at which to start placing data (array offset)
+				abyte0 = new byte[i2]; // create array for the data we're about to read
+				System.arraycopy(abyte1, 0, abyte0, 0, 6); // copy the first 6 bytes from abyte1 to abyte0 at the very beginning
+				
+				while(j2 < i2)
 				{
-					int l2 = i2 - j2;
-					if(l2 > 1000)
-						l2 = 1000;
-					int j3 = datainputstream.read(abyte0, j2, l2);
+					int l2 = i2 - j2; // amount of data to read?
+					/*if(l2 > 1024)
+						l2 = 1024;*/
+					int j3 = datainputstream.read(abyte0, j2, l2); // read into abyte0 from j2 to l2
+					//datainputstream.readFully(abyte0, j2, l2);
+					//int j3 = l2;
 					if(j3 < 0)
 					{
 						s2 = "Length error: " + j2 + "/" + i2;
@@ -3324,7 +3335,7 @@ public final class client extends RSApplet {
 				{
 					decompressors[0] = null;
 				}
-				/*if(abyte0 != null)
+				if(abyte0 != null)
 				{
 					aCRC32_930.reset();
 					aCRC32_930.update(abyte0);
@@ -3335,12 +3346,13 @@ public final class client extends RSApplet {
 						j1++;
 						s2 = "Checksum error: " + i3;
 					}
-				}*/
+				}
 			}
 			catch(IOException ioexception)
 			{
 				if(s2.equals("Unknown error"))
 					s2 = "Connection error";
+				ioexception.printStackTrace();
 				abyte0 = null;
 			}
 			catch(NullPointerException _ex)
@@ -3383,9 +3395,9 @@ public final class client extends RSApplet {
 					catch(Exception _ex) { }
 				}
 
-				l *= 2;
+				/*l *= 2;
 				if(l > 60)
-					l = 60;
+					l = 60;*/
 				aBoolean872 = !aBoolean872;
 			}
 
@@ -6645,7 +6657,7 @@ public final class client extends RSApplet {
 		}
 		try
 		{
-			//connectServer(); // TODO: add jaggrab
+			connectServer();
 			titleStreamLoader = streamLoaderForName(1, "title screen", "title", expectedCRCs[1], 25);
 			aTextDrawingArea_1270 = new TextDrawingArea(false, "p11_full", titleStreamLoader);
 			aTextDrawingArea_1271 = new TextDrawingArea(false, "p12_full", titleStreamLoader);
@@ -9377,12 +9389,16 @@ public final class client extends RSApplet {
 			catch(Exception _ex) { }
 			aSocket832 = null;
 		}
+		// used to be 43595, but i decided to change it. deal with it (h)
 		aSocket832 = openSocket(43595); // if we can't make an http connection we attempt a jaggrab connection
 		aSocket832.setSoTimeout(10000);
-		java.io.InputStream inputstream = aSocket832.getInputStream();
 		OutputStream outputstream = aSocket832.getOutputStream();
-		outputstream.write(("JAGGRAB /" + s + "\n\n").getBytes());
-		return new DataInputStream(inputstream);
+		byte[] data = ("JAGGRAB /" + s + "\n").getBytes();
+		outputstream.write(17); // yodog just like new clients
+		outputstream.write(data.length); // just because i'm lazy and don't want to change the implementation etc.
+		outputstream.write(data); // removed one \n, if we need two line breaks then i'll add it back
+		outputstream.flush();
+		return new DataInputStream(aSocket832.getInputStream());
 	}
 
 	private void doFlamesDrawing()

@@ -15,11 +15,17 @@ import java.math.BigInteger;
 // if you don't agree then you can fu- go implement it differently
 public class Settings
 {
-	@ConfigProperty(name = "host-port", description = "The port that the server will bind to.")
-	public static int PORT = 43594;
+	@ConfigProperty(name = "game-host-port", description = "The port that the game server will bind to.")
+	public static int GAME_SERVER_PORT = 43594;
+
+	@ConfigProperty(name = "fs-host-port", description = "The port that the file server will bind to.")
+	public static int FILE_SERVER_PORT = 43595;
 	
-	@ConfigProperty(name = "host-address", description = "The IP address the server will listen for connections on.")
-	public static String ADDRESS = "0.0.0.0";
+	@ConfigProperty(name = "game-host-address", description = "The IP address the game server will listen for connections on.")
+	public static String GAME_SERVER_ADDRESS = "0.0.0.0";
+
+	@ConfigProperty(name = "file-host-address", description = "The IP address the file server will listen for connections on.")
+	public static String FILE_SERVER_ADDRESS = "0.0.0.0";
 	
 	@ConfigProperty(name = "cycle-rate", description = "The rate at which this server ticks.")
 	public static int CYCLE_RATE = 600;
@@ -46,11 +52,14 @@ public class Settings
 	public static int DATA_CACHE_EXPIRE = 60;
 	
 	@ConfigProperty(name = "client-buffer-size", description = "The maximum amount of data the client can receive in a single packet. This is used to prevent read errors in the client.")
-	public static int CLIENT_BUFFER_SIZE = 5000; // no need to account for id and short length of the player update packet since it doesn't store them in the buffer
+	public static int CLIENT_BUFFER_SIZE = 4096; // no need to account for id and short length of the player update packet since it doesn't store them in the buffer
 	
 	@ConfigProperty(name = "game-cache-path", description = "The location of the cache on the local file system.")
-	public static String GAME_CACHE_PATH = "./Client/bin/.electra_file_store_32/";
-
+	public static String CACHE_PATH = "./Client/bin/.electra_file_store_32/";
+	
+	@ConfigProperty(name = "ondemand-block-size", description = "The size of the data blocks sent using the ondemand protocol.")
+	public static int ONDEMAND_BLOCK_SIZE = 500;
+	
 	public static final BigInteger PRIVATE_RSA_MODULUS = new BigInteger("108172373405425877450997899437663512684493355481918555388146121498017789105183911355218563280687972272899246858446379251130319783396375114126872366667929628111006417838977184384781806606324598094371481693694130104301621043707333604739514038561112409908405804810204666951233129646018734035516899880450280932571");
 	public static final BigInteger PRIVATE_RSA_EXPONENT = new BigInteger("98564497158527422644670805237034260394391034315855905115561191256475430584328889794898022870585515849801660518470237932168060426710071201232896077756718867612363395051057961867335755029896879707960329325758626522910595155051891263683482277143395164730057232044604024350544471248509475021031582758238500070209");
 	public static final BigInteger PUBLIC_RSA_MODULUS = new BigInteger("108172373405425877450997899437663512684493355481918555388146121498017789105183911355218563280687972272899246858446379251130319783396375114126872366667929628111006417838977184384781806606324598094371481693694130104301621043707333604739514038561112409908405804810204666951233129646018734035516899880450280932571");

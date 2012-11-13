@@ -79,10 +79,27 @@ public class Client
 	{
 		try
 		{
+			outbound.flip(); // back to the beginning
+			
 			if (outbound.hasRemaining())
 			{
-				outbound.flip();
-				socketChannel().write(outbound.buffer());
+				// 4 for testing purposes, TODO: change?
+				int writeAmount = (outbound.remaining() >= Settings.CLIENT_BUFFER_SIZE * 4 ? Settings.CLIENT_BUFFER_SIZE * 4 : outbound.remaining());
+				int amount = socketChannel().write(ByteBuffer.wrap(outbound.get(writeAmount))); // read writeAmount bytes and write
+				
+				if (amount > 0)
+				{
+					timeoutTimer.reset();
+				}
+				// for some reason jaggrab doesn't do well with large amounts of data, TODO: look into that.
+			}
+			
+			if (outbound.hasRemaining()) // if stuff is still remaining
+			{
+				outbound.compact(); // if there's still data left then move it to the front of the buffer
+			}
+			else
+			{
 				outbound.clear();
 			}
 		}
@@ -115,7 +132,7 @@ public class Client
 		
 		try
 		{
-			if ((readAmount = socketChannel().read(inboundTemp)) == -1)
+			if ((readAmount = socketChannel().read(inboundTemp)) == -1) // read into temp (pos = readAmount)
 			{
 				disconnect(DisconnectReason.DATA_TRANSFER_ERROR);
 				return;
@@ -128,11 +145,11 @@ public class Client
 			
 			boolean hasEnoughData = true;
 			
-			inboundTemp.flip();
-			inbound.put(inboundTemp);
-			inbound.flip();
-			inbound.compact();
-			inboundTemp.clear();
+			inboundTemp.flip(); // start reading from the beginning (pos = 0)
+			inbound.put(inboundTemp); // put all the data into the inbound buffer (pod = inboundTemp length)
+			inbound.flip(); // flip it so we can read from the beginning (pos = 0)
+			//inbound.compact(); // doubt i even need this, keep it in for lols
+			inboundTemp.clear(); // clear temporary buffer
 			
 			while (hasEnoughData && inbound.hasRemaining())
 			{
@@ -163,9 +180,8 @@ public class Client
 			
 			if (!hasEnoughData)
 			{
-				inbound.reset();
-				inbound.flip();
-				inbound.compact();
+				inbound.reset(); // go back to where we started
+				inbound.compact(); // move everything to the front
 			}
 			else
 			{
@@ -175,7 +191,7 @@ public class Client
 		catch (Exception ex)
 		{
 			System.err.println("Error parsing " + id + " (len: " + length + ", read: " + readAmount + ")");
-			ex.printStackTrace();
+			//ex.printStackTrace();
 			disconnect(DisconnectReason.DATA_TRANSFER_ERROR);
 		}
 	}

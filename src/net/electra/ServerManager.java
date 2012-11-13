@@ -13,7 +13,19 @@ public class ServerManager implements Runnable
 {
 	private final HashMap<Class<? extends Server>, Server> servers = new HashMap<Class<? extends Server>, Server>();
 	private final ThreadGroup serverThreadGroup = new ThreadGroup("SRVDS");
-	private final Cache cache; // TODO: find a place to move this to
+	public static Cache cache; // TODO: find a place to move this to
+	
+	static
+	{
+		try
+		{
+			cache = new Cache(new File(Settings.CACHE_PATH));
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+	}
 	
 	public ServerManager() throws IOException, URISyntaxException
 	{
@@ -26,7 +38,6 @@ public class ServerManager implements Runnable
 		System.out.println("Memory used:        " + (runtime.totalMemory() - runtime.freeMemory()) + " bytes");
 		System.out.println("Memory (total/max): " + runtime.totalMemory() + "/" + runtime.maxMemory() + " bytes");
 		System.out.println("---------------------------------------------- " + Settings.SERVER_NAME);
-		cache = new Cache(new File(Settings.GAME_CACHE_PATH));
 		serverThreadGroup.setDaemon(true);
 		serverThreadGroup.setMaxPriority(Thread.MAX_PRIORITY);
 	}

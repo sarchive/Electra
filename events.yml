@@ -30,6 +30,24 @@
     - name: ErrorEvent
       payload:
         - response: byte
+- namespace: net.electra.services.ondemand
+  events:
+    # START INBOUND EVENTS
+    - name: OnDemandRequestEvent
+      inbound: true
+      op: 15
+      payload:
+        - index: byte
+        - file: short
+        - priority: byte
+- namespace: net.electra.services.jaggrab
+  events:
+    # START INBOUND EVENTS
+    - name: JagGrabRequestEvent
+      inbound: true
+      op: 17
+      payload:
+        - request: string
 - namespace: net.electra.services.game
   events:
     # START INBOUND EVENTS

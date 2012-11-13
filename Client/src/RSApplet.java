@@ -14,10 +14,10 @@ public class RSApplet extends Applet
 	{
 		myWidth = j;
 		myHeight = i;
-			gameFrame = new RSFrame(this, myWidth, myHeight);
-			graphics = getGameComponent().getGraphics();
-			fullGameScreen = new RSImageProducer(myWidth, myHeight, getGameComponent());
-			startRunnable(this, 1);
+		gameFrame = new RSFrame(this, myWidth, myHeight);
+		graphics = getGameComponent().getGraphics();
+		fullGameScreen = new RSImageProducer(myWidth, myHeight, getGameComponent());
+		startRunnable(this, 1);
 	}
 
 	final void initClientFrame(int i, int j)

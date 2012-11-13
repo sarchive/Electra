@@ -23,6 +23,22 @@
     - event: net.electra.services.game.events.LogoutEvent
       chain:
         - link: net.electra.services.game.events.handlers.LogoutEventHandler
+# JagGrabClient events
+- context: net.electra.services.jaggrab.JagGrabClient
+  handlers:
+    - event: net.electra.services.jaggrab.events.JagGrabRequestEvent
+      chain:
+        - link: net.electra.services.jaggrab.events.handlers.JagGrabRequestEventHandler
+# OnDemandClient events
+- context: net.electra.services.ondemand.OnDemandClient
+  handlers:
+    - event: net.electra.services.ondemand.events.OnDemandRequestEvent
+      chain:
+        #- link: net.electra.events.handlers.EventDebugHandler
+        - link: net.electra.services.ondemand.events.handlers.OnDemandRequestEventHandler
+    - event: net.electra.services.ondemand.events.OnDemandProcessEvent
+      chain:
+        - link: net.electra.services.ondemand.events.handlers.OnDemandProcessEventHandler
 # PotentialPlayer events
 - context: net.electra.services.login.PotentialPlayer
   handlers:
@@ -42,3 +58,5 @@
       chain:
         - link: net.electra.services.game.events.handlers.DisconnectEventHandler
         - link: net.electra.services.login.events.handlers.DisconnectEventHandler
+        - link: net.electra.services.ondemand.events.handlers.DisconnectEventHandler
+        - link: net.electra.services.jaggrab.events.handlers.DisconnectEventHandler

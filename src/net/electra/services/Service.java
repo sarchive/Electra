@@ -8,8 +8,9 @@ import net.electra.Server;
 public abstract class Service<H> implements Processable
 {
 	public static final int LOGIN = 14;
-	public static final int UPDATE = 15;
+	public static final int ONDEMAND = 15;
 	public static final int GAME = 16;
+	public static final int JAGGRAB = 17;
 	
 	private final Server server;
 	

@@ -37,6 +37,7 @@ public final class OnDemandFetcher extends OnDemandFetcherParent
 				int j1 = ((ioBuffer[1] & 0xff) << 8) + (ioBuffer[2] & 0xff);
 				int l1 = ((ioBuffer[3] & 0xff) << 8) + (ioBuffer[4] & 0xff);
 				int i2 = ioBuffer[5] & 0xff;
+				//System.out.println("received: " + j1 + " (idx " + l + ") - size: " + l1 + ", number: " + i2);
 				current = null;
 				for(OnDemandData onDemandData = (OnDemandData) requested.reverseGetFirst(); onDemandData != null; onDemandData = (OnDemandData) requested.reverseGetNext())
 				{
@@ -84,7 +85,9 @@ public final class OnDemandFetcher extends OnDemandFetcherParent
 					abyte0 = current.buffer;
 					i1 = completedSize;
 				}
-				for(int k1 = 0; k1 < expectedSize; k1 += inputStream.read(abyte0, k1 + i1, expectedSize - k1));
+				int k1;
+				for(k1 = 0; k1 < expectedSize; k1 += inputStream.read(abyte0, k1 + i1, expectedSize - k1));
+				//System.out.println("read " + k1);
 				if(expectedSize + completedSize >= abyte0.length && current != null)
 				{
 					if(clientInstance.decompressors[0] != null)
@@ -233,12 +236,11 @@ public final class OnDemandFetcher extends OnDemandFetcherParent
 				if(l - openSocketTime < 4000L)
 					return;
 				openSocketTime = l;
-				socket = clientInstance.openSocket(43594 + client.portOff);
+				socket = clientInstance.openSocket(43595);
 				inputStream = socket.getInputStream();
 				outputStream = socket.getOutputStream();
-				outputStream.write(15);
-				for(int j = 0; j < 8; j++)
-					inputStream.read();
+				/*for(int j = 0; j < 8; j++)
+					inputStream.read();*/
 
 				loopCycle = 0;
 			}
@@ -246,12 +248,13 @@ public final class OnDemandFetcher extends OnDemandFetcherParent
 			ioBuffer[1] = (byte)(onDemandData.ID >> 8);
 			ioBuffer[2] = (byte)onDemandData.ID;
 			if(onDemandData.incomplete)
-				ioBuffer[3] = 2;
+				ioBuffer[3] = 2; // we just need to complete the data, low priority
+			else if(!clientInstance.loggedIn)
+				ioBuffer[3] = 1; // we need this stuff to log in
 			else
-			if(!clientInstance.loggedIn)
-				ioBuffer[3] = 1;
-			else
-				ioBuffer[3] = 0;
+				ioBuffer[3] = 0; // we need this stuff NOW
+			//System.out.println("sending request for " + onDemandData.ID + " (idx " + onDemandData.dataType + ")");
+			outputStream.write(15);
 			outputStream.write(ioBuffer, 0, 4);
 			writeLoopCycle = 0;
 			anInt1349 = -10000;
@@ -393,6 +396,8 @@ public final class OnDemandFetcher extends OnDemandFetcherParent
 						ioBuffer[3] = 10;
 						try
 						{
+							System.out.println("sending something");
+							outputStream.write(15);
 							outputStream.write(ioBuffer, 0, 4);
 						}
 						catch(IOException _ex)
