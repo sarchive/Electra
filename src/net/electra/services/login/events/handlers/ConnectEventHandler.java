@@ -37,22 +37,40 @@ public class ConnectEventHandler extends EventHandler<ConnectEvent, PotentialPla
 		}
 		else
 		{
-			Player onlineAlready = context.service().server().<GameService>service(Service.GAME).player(event.username());
+			boolean matches = true;
 			
-			if (onlineAlready != null)
+			for (int i = 0; i < event.checksums().length; i++)
 			{
-				if (event.reconnecting() && onlineAlready.uid() == event.uid())
+				if (context.service().server().cache().checksums()[i] != event.checksums()[i])
 				{
-					response = LoginResponse.PICKED_UP_SESSION; // connection from the same client (uid)
+					matches = false;
+					break;
+				}
+			}
+			
+			if (matches)
+			{
+				Player onlineAlready = context.service().server().<GameService>service(Service.GAME).player(event.username());
+				
+				if (onlineAlready != null)
+				{
+					if (event.reconnecting() && onlineAlready.uid() == event.uid())
+					{
+						response = LoginResponse.PICKED_UP_SESSION; // connection from the same client (uid)
+					}
+					else
+					{
+						response = LoginResponse.ALREADY_LOGGED_IN;
+					}
 				}
 				else
 				{
-					response = LoginResponse.ALREADY_LOGGED_IN;
+					response = LoginResponse.FINALIZE_LOGIN;
 				}
 			}
 			else
 			{
-				response = LoginResponse.FINALIZE_LOGIN;
+				response = LoginResponse.CLIENT_UPDATED;
 			}
 		}
 		

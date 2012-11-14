@@ -14,6 +14,7 @@ import java.util.Map;
 import org.yaml.snakeyaml.Yaml;
 
 import net.electra.events.EventManager;
+import net.electra.io.fs.Cache;
 import net.electra.net.Client;
 import net.electra.net.NetworkService;
 import net.electra.net.events.resolver.EventResolver;
@@ -23,9 +24,9 @@ import net.electra.services.login.LoginService;
 
 public class GameServer extends Server
 {
-	public GameServer(EventManager eventManager) throws IOException
+	public GameServer(ServerManager manager, EventManager eventManager) throws IOException
 	{
-		super(eventManager);
+		super(manager, eventManager);
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -39,8 +40,8 @@ public class GameServer extends Server
 		{
 			ServerManager serverManager = new ServerManager();
 			EventManager eventManager = new EventManager((List<Map<String, Object>>)new Yaml().load(new FileInputStream(new File("./handlers.yml"))));
-			serverManager.register(new FileServer(eventManager));
-			serverManager.register(new GameServer(eventManager));
+			serverManager.register(new FileServer(serverManager, eventManager, new Cache(new File(Settings.CACHE_PATH))));
+			serverManager.register(new GameServer(serverManager, eventManager));
 			serverManager.run();
 		}
 		catch (Exception ex)

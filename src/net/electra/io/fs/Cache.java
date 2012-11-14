@@ -19,6 +19,7 @@ public class Cache implements Closeable
 	private final RandomAccessFile dataFile;
 	private final CacheIndex[] indices;
 	private final byte[] crcTable;
+	private final int[] checksums;
 	
 	public Cache(File directory) throws IOException
 	{
@@ -52,24 +53,24 @@ public class Cache implements Closeable
 		CacheIndex idx = index(0);
 		System.out.println("Building CRC32 table (" + idx.size() + " entries)");
 
-		int[] crc = new int[idx.size()];
-		DataBuffer crcBuffer = new DataBuffer(new byte[crc.length * 4 + 4]);
+		checksums = new int[idx.size()];
+		DataBuffer crcBuffer = new DataBuffer(new byte[checksums.length * 4 + 4]);
 		int hash = 1234;
 		CRC32 crc32 = new CRC32();
 		
-		for (int i = 1; i < crc.length; i++)
+		for (int i = 1; i < checksums.length; i++)
 		{
 			crc32.reset();
 			byte[] bytes =  get(0, i).buffer().array();
 			crc32.update(bytes, 0, bytes.length);
-			crc[i] = (int)crc32.getValue();
-			System.out.println("\tFile " + i + " CRC: " + crc[i]);
+			checksums[i] = (int)crc32.getValue();
+			System.out.println("\tFile " + i + " CRC: " + checksums[i]);
 		}
 		
-		for (int i = 0; i < crc.length; i++)
+		for (int i = 0; i < checksums.length; i++)
 		{
-			hash = (hash << 1) + crc[i];
-			crcBuffer.putInt(crc[i]);
+			hash = (hash << 1) + checksums[i];
+			crcBuffer.putInt(checksums[i]);
 		}
 		
 		System.out.println("CRC32 hash: " + hash);
@@ -139,6 +140,11 @@ public class Cache implements Closeable
 	public int indexLength()
 	{
 		return indices.length;
+	}
+	
+	public int[] checksums()
+	{
+		return checksums;
 	}
 	
 	public byte[] crcTable()

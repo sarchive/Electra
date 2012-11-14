@@ -2,7 +2,6 @@ package net.electra.services.jaggrab.events.handlers;
 
 import java.io.IOException;
 
-import net.electra.ServerManager;
 import net.electra.events.EventHandler;
 import net.electra.io.DataBuffer;
 import net.electra.io.fs.CacheFile;
@@ -30,11 +29,11 @@ public class JagGrabRequestEventHandler extends EventHandler<JagGrabRequestEvent
 		{
 			if (prefix == 0)
 			{
-				context.client().write(new DataBuffer(ServerManager.cache.crcTable()));
+				context.client().write(new DataBuffer(context.service().server().cache().crcTable()));
 			}
 			else
 			{
-				CacheFile file = ServerManager.cache.get(0, prefix);
+				CacheFile file = context.service().server().cache().get(0, prefix);
 				context.client().write(new DataBuffer(file.buffer().array()));
 			}
 		}

@@ -6,26 +6,12 @@ import java.net.URISyntaxException;
 import java.util.Date;
 import java.util.HashMap;
 
-import net.electra.io.fs.Cache;
 import net.electra.services.Service;
 
 public class ServerManager implements Runnable
 {
 	private final HashMap<Class<? extends Server>, Server> servers = new HashMap<Class<? extends Server>, Server>();
 	private final ThreadGroup serverThreadGroup = new ThreadGroup("SRVDS");
-	public static Cache cache; // TODO: find a place to move this to
-	
-	static
-	{
-		try
-		{
-			cache = new Cache(new File(Settings.CACHE_PATH));
-		}
-		catch (IOException e)
-		{
-			e.printStackTrace();
-		}
-	}
 	
 	public ServerManager() throws IOException, URISyntaxException
 	{
@@ -85,11 +71,6 @@ public class ServerManager implements Runnable
 	public void unregister(Server server)
 	{
 		servers.remove(server.getClass());
-	}
-	
-	public Cache cache()
-	{
-		return cache;
 	}
 	
 	@SuppressWarnings("unchecked")

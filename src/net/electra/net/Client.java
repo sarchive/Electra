@@ -173,7 +173,7 @@ public class Client
 					break;
 				}
 				
-				System.out.println("Received " + event.getClass().getSimpleName() + " (id: " + id + ", len: " + length + ")");
+				//System.out.println("Received " + event.getClass().getSimpleName() + " (id: " + id + ", len: " + length + ")");
 				event.parse(new DataBuffer(inbound.get(length)));
 				receiver.fire(event);
 			}

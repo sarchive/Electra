@@ -61,7 +61,7 @@ public class ConnectEvent extends NetworkEvent
 		for (int i = 0; i < checksums.length; i++)
 		{
 			checksums[i] = buffer.getInt();
-			System.out.println("Checksum " + i + ": " + checksums[i]); // TODO: add checksum checking, jaggrab, ondemand, etc.
+			//System.out.println("Checksum " + i + ": " + checksums[i]);
 		}
 		
 		// check the length reported by the client with our expected size based on how big the packet actually is

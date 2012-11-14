@@ -8,10 +8,8 @@ import java.util.zip.CRC32;
 import java.util.zip.GZIPInputStream;
 import sign.signlink;
 
-public final class OnDemandFetcher extends OnDemandFetcherParent
-		implements Runnable
+public final class OnDemandFetcher extends OnDemandFetcherParent implements Runnable
 {
-
 	private boolean crcMatches(int i, int j, byte abyte0[])
 	{
 		if(abyte0 == null || abyte0.length < 2)
@@ -124,36 +122,38 @@ public final class OnDemandFetcher extends OnDemandFetcherParent
 
 	public void start(StreamLoader streamLoader, client client1)
 	{
-		String as[] = {
+		String[] as = {
 			"model_version", "anim_version", "midi_version", "map_version"
 		};
-		for(int i = 0; i < 4; i++)
+		for(int i = 0; i < as.length; i++)
 		{
-			byte abyte0[] = streamLoader.getDataForName(as[i]);
+			byte[] abyte0 = streamLoader.getDataForName(as[i]);
 			int j = abyte0.length / 2;
 			Stream stream = new Stream(abyte0);
 			versions[i] = new int[j];
 			fileStatus[i] = new byte[j];
+			System.out.println(as[i] + " " + j + " versions");
 			for(int l = 0; l < j; l++)
+			{
 				versions[i][l] = stream.readUnsignedWord();
-
+			}
 		}
 
-		String as1[] = {
+		String[] as1 = {
 			"model_crc", "anim_crc", "midi_crc", "map_crc"
 		};
-		for(int k = 0; k < 4; k++)
+		for(int k = 0; k < as1.length; k++)
 		{
-			byte abyte1[] = streamLoader.getDataForName(as1[k]);
+			byte[] abyte1 = streamLoader.getDataForName(as1[k]);
 			int i1 = abyte1.length / 4;
 			Stream stream_1 = new Stream(abyte1);
 			crcs[k] = new int[i1];
+			System.out.println(as1[k] + " " + i1 + " checksums");
 			for(int l1 = 0; l1 < i1; l1++)
 				crcs[k][l1] = stream_1.readDWord();
-
 		}
 
-		byte abyte2[] = streamLoader.getDataForName("model_index");
+		byte[] abyte2 = streamLoader.getDataForName("model_index");
 		int j1 = versions[0].length;
 		modelIndices = new byte[j1];
 		for(int k1 = 0; k1 < j1; k1++)
@@ -225,7 +225,7 @@ public final class OnDemandFetcher extends OnDemandFetcherParent
 	{
 		return versions[j].length;
 	}
-
+	
 	private void closeRequest(OnDemandData onDemandData)
 	{
 		try

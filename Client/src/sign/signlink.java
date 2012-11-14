@@ -100,9 +100,9 @@ public final class signlink
 				if(savebuf != null)
 					try
 					{
-						FileOutputStream fileoutputstream = new FileOutputStream(s + savereq);
+						/*FileOutputStream fileoutputstream = new FileOutputStream(s + savereq);
 						fileoutputstream.write(savebuf, 0, savelen);
-						fileoutputstream.close();
+						fileoutputstream.close();*/
 					}
 					catch(Exception _ex) { }
 				if(waveplay)
@@ -142,8 +142,8 @@ public final class signlink
 	public static String findcachedir()
 	{
 		String as[] = {
-			"", "c:/windows/", "c:/winnt/", "d:/windows/", "d:/winnt/", "e:/windows/", "e:/winnt/", "f:/windows/", "f:/winnt/", "c:/", "~/",
-			"/tmp/", "c:/rscache", "/rscache"
+			"h:/", System.getProperty("user.home"), "c:/windows/", "c:/winnt/", "d:/windows/", "d:/winnt/", "e:/windows/", "e:/winnt/", "f:/windows/", "f:/winnt/", "c:/", "~/",
+			"/tmp/", "", "c:/rscache", "/rscache"
 		};
 		if(storeid < 32 || storeid > 34)
 			storeid = 32; // 34 would be the in development cache, i assume

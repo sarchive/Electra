@@ -13,6 +13,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import net.electra.events.EventManager;
+import net.electra.io.fs.Cache;
 import net.electra.net.Client;
 import net.electra.net.DisconnectReason;
 import net.electra.services.Service;
@@ -25,11 +26,13 @@ public abstract class Server implements Processable, Runnable
 	protected final Timer executionTimer = new Timer();
 	protected final EventManager eventManager;
 	protected final Selector selector;
+	protected ServerManager manager;
 	protected Thread currentThread;
 	protected long tick = 0;
 	
-	public Server(EventManager eventManager) throws IOException
+	public Server(ServerManager manager, EventManager eventManager) throws IOException
 	{
+		this.manager = manager;
 		this.eventManager = eventManager;
 		this.selector = Selector.open();
 		this.serverChannel = ServerSocketChannel.open();
@@ -178,6 +181,16 @@ public abstract class Server implements Processable, Runnable
 		}
 		
 		return null;
+	}
+	
+	public Cache cache()
+	{
+		return manager.server(FileServer.class).cache(); // TODO: find a better place for the cache
+	}
+	
+	public ServerManager manager()
+	{
+		return manager;
 	}
 	
 	public EventManager eventManager()

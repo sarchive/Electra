@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 import net.electra.events.EventManager;
+import net.electra.io.fs.Cache;
 import net.electra.net.Client;
 import net.electra.net.NetworkService;
 import net.electra.net.events.resolver.EventResolver;
@@ -20,9 +21,12 @@ import org.yaml.snakeyaml.Yaml;
 
 public class FileServer extends Server
 {
-	public FileServer(EventManager eventManager) throws IOException
+	private final Cache cache;
+	
+	public FileServer(ServerManager manager, EventManager eventManager, Cache cache) throws IOException
 	{
-		super(eventManager);
+		super(manager, eventManager);
+		this.cache = cache;
 	}
 	
 	@Override
@@ -86,6 +90,11 @@ public class FileServer extends Server
 		}
 		
 		return true;
+	}
+	
+	public Cache cache()
+	{
+		return cache;
 	}
 
 	@Override

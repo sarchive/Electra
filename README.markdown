@@ -27,7 +27,7 @@ Electra is a server that is created to be intuitive, well designed, and fast. It
 
 ## Compatibility Notes
 
-I've taken it upon myself to simplify and modify the client. The modifications I've made are to make the design of the server simpler. I've simplified the protocl (no random data types), removed unused anti-cheat packets (which are useless now anyway), etc.
+I've taken it upon myself to simplify and modify the client. The modifications I've made are to make the design of the server simpler. I've simplified the protocol (no random data types), removed unused anti-cheat packets (which are useless now anyway), etc.
 
 ### Honorable Mentions
 

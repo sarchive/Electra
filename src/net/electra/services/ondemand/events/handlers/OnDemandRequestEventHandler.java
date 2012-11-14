@@ -2,7 +2,6 @@ package net.electra.services.ondemand.events.handlers;
 
 import java.io.IOException;
 
-import net.electra.ServerManager;
 import net.electra.events.EventHandler;
 import net.electra.services.ondemand.OnDemandClient;
 import net.electra.services.ondemand.OnDemandRequest;
@@ -15,7 +14,7 @@ public class OnDemandRequestEventHandler extends EventHandler<OnDemandRequestEve
 	{
 		try
 		{
-			context.submit(new OnDemandRequest(ServerManager.cache.get(event.index() + 1, event.file()), event.priority()));
+			context.submit(new OnDemandRequest(context.service().server().cache().get(event.index() + 1, event.file()), event.priority()));
 		}
 		catch (IOException ex)
 		{
