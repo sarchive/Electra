@@ -73,13 +73,13 @@ public class UpdateMask implements Cloneable
 		}
 		else if (flag instanceof UpdateMask)
 		{
-			return mask == ((UpdateMask)flag).mask();
+			return mask == ((UpdateMask)flag).get();
 		}
 		
 		return super.equals(flag);
 	}
 	
-	public int mask()
+	public int get()
 	{
 		return mask;
 	}

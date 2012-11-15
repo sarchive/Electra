@@ -9,6 +9,7 @@ import net.electra.net.DisconnectReason;
 import net.electra.net.NetworkService;
 import net.electra.net.events.resolver.NetworkEventData;
 import net.electra.services.game.entities.players.Player;
+import net.electra.services.game.events.ChatMessageEvent;
 import net.electra.services.game.events.MovementEvent;
 import net.electra.services.game.events.PlayerTickEvent;
 import net.electra.services.login.PotentialPlayer;
@@ -25,6 +26,7 @@ public class GameService extends NetworkService<Player, PotentialPlayer>
 	{
 		super(server);
 		setup(new NetworkEventData(98, -1, MovementEvent.class));
+		setup(new NetworkEventData(4, -1, ChatMessageEvent.class));
 		//networkEvents().putAll(server.resolver().resolve("net.electra.services.game.events"));
 	}
 	

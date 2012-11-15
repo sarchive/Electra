@@ -8222,6 +8222,7 @@ public final class client extends RSApplet {
 		}
 		if((i & 0x80) != 0) // chat
 		{
+			System.out.println("omg chat");
 			int i1 = stream.method434();
 			int j2 = stream.readUnsignedByte();
 			int j3 = stream.method427();

@@ -186,20 +186,27 @@ public final class DataBuffer
 		}
 	}
 	
+	public DataBuffer putReverse(byte[] data)
+	{
+		for (int i = data.length - 1; i >= 0; i--)
+		{
+			put(data[i]);
+		}
+		
+		return this;
+	}
+	
 	public byte[] getReverse(int amount)
 	{
-		byte[] data = get(amount);
-		int right = data.length - 1;
-		int left = 0;
+		byte[] data1 = get(amount);
+		byte[] data2 = new byte[data1.length];
 
-		while (left < right)
+		for (int i = data1.length - 1, n = 0; i >= 0; i--, n++)
 		{
-			byte temp = data[left];
-			data[left++] = data[right];
-			data[right--] = temp;
+			data2[n] = data1[i];
 		}
 
-		return data;
+		return data2;
 	}
 	
 	public byte peek()

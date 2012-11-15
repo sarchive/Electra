@@ -1,6 +1,6 @@
 package net.electra.services.game.events.handlers;
 
-import java.lang.ref.SoftReference;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,6 +12,7 @@ import net.electra.services.game.entities.Direction;
 import net.electra.services.game.entities.Position;
 import net.electra.services.game.entities.UpdateMask;
 import net.electra.services.game.entities.players.Player;
+import net.electra.services.game.entities.players.PlayerRights;
 import net.electra.services.game.events.PlayerTickEvent;
 
 public class PlayerUpdateEventHandler extends EventHandler<PlayerTickEvent, Player>
@@ -20,11 +21,10 @@ public class PlayerUpdateEventHandler extends EventHandler<PlayerTickEvent, Play
 	@SuppressWarnings("unused")
 	public void handle(PlayerTickEvent event, Player player)
 	{
-		// TODO: update this to actually do something useful. i took a break from electra when i started working on player updating.
-		// update 10/17/2012, started planning a design
-		// update 10/19/2012, i'm tossing around design ideas so you'll see a bunch of random code in here
 		final BitBuffer bits = new BitBuffer();
 		final DataBuffer blocks = new DataBuffer();
+		int old = player.mask().get();
+		player.mask().clear(UpdateMask.PLAYER_CHAT);
 		
 		if (player.placementRequired() || player.blockRequired() || player.movementRequired())
 		{
@@ -41,10 +41,52 @@ public class PlayerUpdateEventHandler extends EventHandler<PlayerTickEvent, Play
 			bits.put(false);
 		}
 		
+		player.mask().set(old);
 		bits.put(8, player.localPlayers().size());
-		List<SoftReference<Player>> toRemove = new ArrayList<SoftReference<Player>>();
+		List<WeakReference<Player>> toRemove = new ArrayList<WeakReference<Player>>();
 		
-		// update existing players, add new ones
+		for (WeakReference<Player> otherRef : player.localPlayers())
+		{
+			Player other = otherRef.get();
+			
+			if (other != null && player.position().distance(other.position()) <= 15 && !other.placementRequired())
+			{
+				if (other.blockRequired() || other.movementRequired())
+				{
+					bits.put(true);
+					updatePlayerState(bits, other, false);
+					
+					if (other.blockRequired())
+					{
+						updateBlock(blocks, other);
+					}
+				}
+				else
+				{
+					bits.put(false);
+				}
+			}
+			else
+			{
+				bits.put(true);
+				bits.put(2, 3);
+			}
+		}
+		
+		// TODO: implement this the way it SHOULD be instead of some typical PI-esque implementation
+		for (Player other : player.service().players())
+		{
+			if (other != null && player != other && !player.hasLocalPlayer(other) && player.position().distance(other.position()) <= 15)
+			{
+				player.localPlayers().add(new WeakReference<Player>(other));
+				addNewPlayer(bits, player, other, true, false);
+				old = other.mask().get();
+				other.mask().add(UpdateMask.PLAYER_APPEARANCE);
+				updateBlock(blocks, other);
+				other.mask().set(old);
+			}
+		}
+		
 		bits.put(11, 2047);
 		
 		// these network events, like others, are special cases dealing with abnormal circumstances.
@@ -90,18 +132,24 @@ public class PlayerUpdateEventHandler extends EventHandler<PlayerTickEvent, Play
 	
 	public void updateBlock(DataBuffer buffer, Player player)
 	{
-		if (player.mask().mask() >= 256)
+		if (player.mask().get() >= 256)
 		{
 			player.mask().set(UpdateMask.PLAYER_WORD_SIZE);
 		}
 		
 		if (player.mask().has(UpdateMask.PLAYER_WORD_SIZE))
 		{
-			buffer.putShort(player.mask().mask());
+			buffer.putShort(player.mask().get());
 		}
 		else
 		{
-			buffer.put(player.mask().mask());
+			buffer.put(player.mask().get());
+		}
+		
+		if (player.mask().has(UpdateMask.PLAYER_CHAT))
+		{
+			player.message().rights(PlayerRights.ADMIN.id());
+			player.message().build(buffer);
 		}
 		
 		if (player.mask().has(UpdateMask.PLAYER_APPEARANCE))

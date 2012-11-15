@@ -1,6 +1,7 @@
 package net.electra.events.handlers;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 
 import net.electra.events.Event;
 import net.electra.events.EventHandler;
@@ -18,7 +19,7 @@ public final class EventDebugHandler extends EventHandler<Event, Object>
 		{
 			for (Field field : fields)
 			{
-				if (field.getName().equals("context"))
+				if (field.getName().equals("context") || Modifier.isStatic(field.getModifiers()))
 				{
 					continue;
 				}

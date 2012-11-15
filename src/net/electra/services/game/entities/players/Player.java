@@ -3,18 +3,19 @@ package net.electra.services.game.entities.players;
 import java.lang.ref.WeakReference;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Queue;
 
 import net.electra.net.Client;
 import net.electra.net.ClientAdapter;
 import net.electra.services.game.GameService;
 import net.electra.services.game.entities.Character;
 import net.electra.services.game.entities.Position;
+import net.electra.services.game.events.ChatMessageEvent;
 
 public class Player extends Character implements ClientAdapter
 {
 	private final List<WeakReference<Player>> localPlayers = new LinkedList<WeakReference<Player>>();
-	private final Queue<WeakReference<Player>> newPlayers = new LinkedList<WeakReference<Player>>();
+	//private final Queue<WeakReference<Player>> newPlayers = new LinkedList<WeakReference<Player>>();
+	private ChatMessageEvent message;
 	private final String username;
 	private final int uid;
 	private Client client;
@@ -26,20 +27,38 @@ public class Player extends Character implements ClientAdapter
 		this.uid = uid;
 	}
 	
+	public void message(ChatMessageEvent value)
+	{
+		message = value;
+	}
+	
+	public ChatMessageEvent message()
+	{
+		return message;
+	}
+	
 	public void associate(Client client)
 	{
 		this.client = client;
 		client.associate(this);
 	}
 	
+	public boolean hasLocalPlayer(Player player)
+	{
+		for (WeakReference<Player> other : localPlayers)
+		{
+			if (other.get() == player)
+			{
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
 	public List<WeakReference<Player>> localPlayers()
 	{
 		return localPlayers;
-	}
-	
-	public Queue<WeakReference<Player>> newPlayers()
-	{
-		return newPlayers;
 	}
 	
 	public String username()

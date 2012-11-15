@@ -372,7 +372,7 @@ public final class Stream extends NodeSub {
 	public void method441(int i, byte abyte0[], int j)
 	{
 		for(int k = (i + j) - 1; k >= i; k--)
-			buffer[currentOffset++] = (byte)(abyte0[k] + 128);
+			buffer[currentOffset++] = (byte)(abyte0[k]);
 	}
 
 	public void method442(int i, int j, byte abyte0[])

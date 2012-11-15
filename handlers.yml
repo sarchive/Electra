@@ -13,6 +13,9 @@
     - event: net.electra.services.game.events.CommandEvent
       chain:
         - link: net.electra.services.game.events.handlers.CommandEventHandler
+    - event: net.electra.services.game.events.ChatMessageEvent
+      chain:
+        - link: net.electra.services.game.events.handlers.ChatMessageEventHandler
     - event: net.electra.services.game.events.ButtonClickEvent
       chain:
         - link: net.electra.events.handlers.EventDebugHandler
