@@ -4,6 +4,7 @@ import java.nio.ByteBuffer;
 
 import net.electra.math.ISAACRandomSequencer;
 
+// TODO: make better
 public final class DataBuffer
 {
 	private ISAACRandomSequencer sequencer;
@@ -24,8 +25,6 @@ public final class DataBuffer
 		this(new byte[0]);
 	}
 	
-	// it may be in our best interest to, at some point, remove this. maybe even write an optimizer so i can keep the simple code.
-	// it's certainly better than having a bunch of copy and paste clutter.
 	private long getNumber(int amountOfBytes)
 	{
 		if (amountOfBytes <= 0)
@@ -74,65 +73,9 @@ public final class DataBuffer
 	public byte[] get(int amount)
 	{
 		byte[] buff = new byte[amount];
-		
-		for (int i = 0; i < buff.length; i++)
-		{
-			buff[i] = get();
-		}
-		
+		System.arraycopy(buffer, position, buff, 0, amount);
+		position += amount;
 		return buff;
-	}
-	
-	public DataBuffer put(int b)
-	{
-		return put((byte)b);
-	}
-	
-	public DataBuffer put(byte b)
-	{
-		if (position >= buffer.length)
-		{
-			expand();
-		}
-		
-		buffer[position++] = b;
-		
-		if (position >= length)
-		{
-			length = position;
-		}
-		
-		return this;
-	}
-	
-	public DataBuffer put(byte... b)
-	{
-		for (int i = 0; i < b.length; i++)
-		{
-			put(b[i]);
-		}
-		
-		return this;
-	}
-	
-	public DataBuffer put(DataBuffer src)
-	{
-		while (src.hasRemaining())
-		{
-			put(src.get());
-		}
-		
-		return this;
-	}
-	
-	public DataBuffer put(ByteBuffer src)
-	{
-		while (src.hasRemaining())
-		{
-			 put(src.get());
-		}
-		
-		return this;
 	}
 	
 	public int getHeader()
@@ -238,6 +181,58 @@ public final class DataBuffer
 	public DataBuffer putHeader(int value)
 	{
 		return put((byte)(sequencer == null ? value : value + sequencer.next()));
+	}
+	
+	public DataBuffer put(int b)
+	{
+		return put((byte)b);
+	}
+	
+	public DataBuffer put(byte b)
+	{
+		if (position >= buffer.length)
+		{
+			expand();
+		}
+		
+		buffer[position++] = b;
+		
+		if (position >= length)
+		{
+			length = position;
+		}
+		
+		return this;
+	}
+	
+	public DataBuffer put(byte... b)
+	{
+		for (int i = 0; i < b.length; i++)
+		{
+			put(b[i]);
+		}
+		
+		return this;
+	}
+	
+	public DataBuffer put(DataBuffer src)
+	{
+		while (src.hasRemaining())
+		{
+			put(src.get());
+		}
+		
+		return this;
+	}
+	
+	public DataBuffer put(ByteBuffer src)
+	{
+		while (src.hasRemaining())
+		{
+			 put(src.get());
+		}
+		
+		return this;
 	}
 	
 	public DataBuffer putLengthByte()

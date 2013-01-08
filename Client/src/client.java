@@ -97,9 +97,10 @@ public final class client extends RSApplet {
 					}
 					catch(Exception _ex) { }
 				}
-				j *= 2;
+				// TODO: re-enable
+				/*j *= 2;
 				if(j > 60)
-					j = 60;
+					j = 60;*/
 				aBoolean872 = !aBoolean872;
 			}
 		}
@@ -7535,7 +7536,7 @@ public final class client extends RSApplet {
 		if(entity.anInt1529 > 0)
 			entity.anInt1529--;
 	}
-
+	
 	private void drawGameScreen()
 	{
 		if(welcomeScreenRaised)
@@ -9390,7 +9391,6 @@ public final class client extends RSApplet {
 			catch(Exception _ex) { }
 			aSocket832 = null;
 		}
-		// used to be 43595, but i decided to change it. deal with it (h)
 		aSocket832 = openSocket(43595); // if we can't make an http connection we attempt a jaggrab connection
 		aSocket832.setSoTimeout(10000);
 		OutputStream outputstream = aSocket832.getOutputStream();

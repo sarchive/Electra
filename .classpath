@@ -1,18 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry kind="src" path="Client/src"/>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
-	<classpathentry kind="lib" path="lib/bcel-5.2.jar">
-		<attributes>
-			<attribute name="javadoc_location" value="http://commons.apache.org/bcel/apidocs/"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="lib/events.jar"/>
-	<classpathentry kind="lib" path="lib/snakeyaml-1.11.jar">
-		<attributes>
-			<attribute name="javadoc_location" value="http://snakeyamlrepo.appspot.com/releases/1.10/site/apidocs/"/>
-		</attributes>
-	</classpathentry>
+	<classpathentry kind="lib" path="Client/client.jar"/>
+	<classpathentry kind="lib" path="lib/bcel-5.2.jar"/>
 	<classpathentry kind="lib" path="lib/commons-compress-1.4.1.jar"/>
-	<classpathentry kind="output" path="bin"/>
+	<classpathentry kind="lib" path="lib/snakeyaml-1.11.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="output" path="Client/bin"/>
 </classpath>

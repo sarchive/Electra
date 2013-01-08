@@ -3,23 +3,22 @@ package net.electra.net;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
+import java.util.LinkedList;
 
 import net.electra.Settings;
-import net.electra.Timer;
 import net.electra.io.DataBuffer;
-import net.electra.net.events.DisconnectEvent;
 import net.electra.net.events.NetworkEvent;
-import net.electra.services.Servicable;
+import net.electra.util.Timer;
 
-public class Client
+public abstract class Client
 {
+	protected final LinkedList<NetworkEvent> events = new LinkedList<NetworkEvent>();
+	private DisconnectReason disconnectReason;
 	private final SelectionKey selectionKey;
-	private boolean disconnecting = false;
 	private final ByteBuffer inboundTemp;
-	private final DataBuffer outbound;
-	private final DataBuffer inbound;
+	protected final DataBuffer outbound;
+	protected final DataBuffer inbound;
 	private final Timer timeoutTimer;
-	private Servicable<?> receiver;
 	
 	public Client(SelectionKey selectionKey)
 	{
@@ -31,43 +30,30 @@ public class Client
 		selectionKey.attach(this);
 	}
 	
-	public void associate(Servicable<?> receiver)
-	{
-		this.receiver = receiver;
-	}
-	
 	public void disconnect(DisconnectReason reason)
 	{
-		disconnect(reason, true);
-	}
-	
-	public void disconnect(DisconnectReason reason, boolean fireEvent)
-	{
-		if (!disconnecting)
+		synchronized (disconnectReason) // nothing else should be locking to this, so we'll use this.
 		{
-			disconnecting = true;
-			flush(true);
+			if (disconnectReason != null)
+			{
+				return;
+			}
 			
-			if (receiver != null)
+			disconnectReason = reason;
+			flush(true);
+			System.out.println("Client (" + socketChannel().socket() + ") disconnecting: " + reason);
+			
+			try
 			{
-				receiver.fire(new DisconnectEvent(reason));
+				socketChannel().close();
 			}
-			else
+			catch (Exception ex)
 			{
-				System.out.println("Client (" + socketChannel().socket() + ") disconnecting: " + reason);
+				ex.printStackTrace();
 			}
+			
+			selectionKey.cancel();
 		}
-		
-		try
-		{
-			socketChannel().close();
-		}
-		catch (Exception ex)
-		{
-			ex.printStackTrace();
-		}
-		
-		selectionKey.cancel();
 	}
 	
 	public void flush()
@@ -75,7 +61,7 @@ public class Client
 		flush(false);
 	}
 	
-	private void flush(boolean disconnecting)
+	public void flush(boolean disconnecting)
 	{
 		try
 		{
@@ -83,15 +69,15 @@ public class Client
 			
 			if (outbound.hasRemaining())
 			{
-				// 4 for testing purposes, TODO: change?
-				int writeAmount = (outbound.remaining() >= Settings.CLIENT_BUFFER_SIZE * 4 ? Settings.CLIENT_BUFFER_SIZE * 4 : outbound.remaining());
-				int amount = socketChannel().write(ByteBuffer.wrap(outbound.get(writeAmount))); // read writeAmount bytes and write
+				// for testing purposes, TODO: change?
+				//int writeAmount = (outbound.remaining() >= Settings.CLIENT_BUFFER_SIZE ? Settings.CLIENT_BUFFER_SIZE : outbound.remaining());
+				int amount = socketChannel().write(outbound.buffer()); // read writeAmount bytes and write
+				// for some reason jaggrab doesn't do well with large amounts of data, TODO: look into that.
 				
 				if (amount > 0)
 				{
 					timeoutTimer.reset();
 				}
-				// for some reason jaggrab doesn't do well with large amounts of data, TODO: look into that.
 			}
 			
 			if (outbound.hasRemaining()) // if stuff is still remaining
@@ -112,6 +98,12 @@ public class Client
 		}
 	}
 	
+	/**
+	 * Reads a packet with the 
+	 * @return True if the a packet was read completely, false if there was not enough data.
+	 */
+	public abstract boolean readPacket();
+	
 	public void read()
 	{
 		if (!connected())
@@ -120,14 +112,12 @@ public class Client
 			return;
 		}
 		
-		if (timeoutTimer.elapsed() >= Settings.SOCKET_TIMEOUT)
+		if (timeoutTimer.elapsed() >= Settings.CLIENT_TIMEOUT)
 		{
 			disconnect(DisconnectReason.DATA_TRANSFER_TIMEOUT);
 			return;
 		}
 		
-		int id = -1; // up here so we can use it in error reporting
-		int length = -1;
 		int readAmount = -1;
 		
 		try
@@ -148,34 +138,13 @@ public class Client
 			inboundTemp.flip(); // start reading from the beginning (pos = 0)
 			inbound.put(inboundTemp); // put all the data into the inbound buffer (pod = inboundTemp length)
 			inbound.flip(); // flip it so we can read from the beginning (pos = 0)
-			//inbound.compact(); // doubt i even need this, keep it in for lols
+			//inbound.compact(); // doubt i even need this
 			inboundTemp.clear(); // clear temporary buffer
 			
 			while (hasEnoughData && inbound.hasRemaining())
 			{
 				inbound.mark();
-				
-				id = inbound.getHeader();
-				NetworkEvent event = ((NetworkService<?, ?>)receiver.service()).networkEvents().get(id).newInstance();
-				length = event.length();
-				// TODO: static hiding, create static methods in NetworkEvent for id and length and then hide them with static methods in the "event." this is how you implement
-				// static method inheritence. one annoyance is that you have to suppress the warnings to reference "NetworkEvent" statically instead of through instances
-				// how it works now is fine, though. this is just a thought for better design.
-				
-				if (length == -1 && inbound.hasRemaining())
-				{
-					length = inbound.getUnsigned();
-				}
-				
-				if (length == -1 || inbound.remaining() < length)
-				{
-					hasEnoughData = false;
-					break;
-				}
-				
-				//System.out.println("Received " + event.getClass().getSimpleName() + " (id: " + id + ", len: " + length + ")");
-				event.parse(new DataBuffer(inbound.get(length)));
-				receiver.fire(event);
+				hasEnoughData = readPacket();
 			}
 			
 			if (!hasEnoughData)
@@ -190,66 +159,10 @@ public class Client
 		}
 		catch (Exception ex)
 		{
-			System.err.println("Error parsing " + id + " (len: " + length + ", read: " + readAmount + ")");
+			System.err.println("Error parsing (read: " + readAmount + ")");
 			//ex.printStackTrace();
 			disconnect(DisconnectReason.DATA_TRANSFER_ERROR);
 		}
-	}
-	
-	public <T extends NetworkEvent> void write(T event)
-	{
-		receiver.fire(event);
-		
-		if (event.chainBroken())
-		{
-			System.out.println(event + ": chain broken");
-			return;
-		}
-		
-		if (event.id() != -1)
-		{
-			outbound.putHeader(event.id());
-		}
-		
-		if (event.length() == -1)
-		{
-			outbound.putLengthByte();
-		}
-		else if (event.length() == -2)
-		{
-			outbound.putLengthShort();
-		}
-		
-		event.build(outbound);
-		
-		if (event.length() == -1)
-		{
-			outbound.finishByteHeader();
-		}
-		else if (event.length() == -2)
-		{
-			outbound.finishShortHeader();
-		}
-	}
-	
-	public void write(DataBuffer buffer)
-	{
-		outbound.put(buffer);
-	}
-	
-	public Servicable<?> receiver()
-	{
-		return receiver;
-	}
-	
-	public DataBuffer out()
-	{
-		return outbound;
-	}
-	
-	public DataBuffer in()
-	{
-		return inbound;
 	}
 	
 	public SocketChannel socketChannel()
@@ -262,8 +175,18 @@ public class Client
 		return selectionKey;
 	}
 	
+	public DisconnectReason disconnectReason()
+	{
+		return disconnectReason;
+	}
+	
 	public boolean connected()
 	{
-		return socketChannel().isConnected();
+		return socketChannel().isConnected() && disconnectReason == null;
+	}
+	
+	public LinkedList<NetworkEvent> events()
+	{
+		return events;
 	}
 }

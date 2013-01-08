@@ -1,16 +1,33 @@
 package net.electra.events;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.yaml.snakeyaml.Yaml;
+
+@SuppressWarnings("unchecked")
 public class EventManager
 {
-	private final HashMap<Class<? extends Event>, EventHandler<?, ?>> handlers = new HashMap<Class<? extends Event>, EventHandler<?, ?>>();
+	static
+	{
+		try
+		{
+    		load((List<Map<String, Object>>)new Yaml().load(new FileInputStream(new File("./config/handlers.yml"))));
+		}
+		catch (Exception ex)
+		{
+			ex.printStackTrace();
+		}
+	}
 	
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public EventManager(List<Map<String, Object>> containers) throws ClassNotFoundException, InstantiationException, IllegalAccessException
+	private static final HashMap<Class<? extends Event>, EventHandler<?, ?>> handlers = new HashMap<Class<? extends Event>, EventHandler<?, ?>>();
+	
+	@SuppressWarnings("rawtypes")
+	public static void load(List<Map<String, Object>> containers) throws ClassNotFoundException, InstantiationException, IllegalAccessException
 	{
 		for (Map<String, Object> container : containers)
 		{
@@ -35,30 +52,30 @@ public class EventManager
 		}
 	}
 	
-	@SuppressWarnings("unchecked")
-	public <T extends Event, C> void fire(T event, C context)
+	public static <T extends Event, C> boolean fire(T event, C context)
 	{
 		try
 		{
-			((EventHandler<T, C>)handler(event.getClass(), context.getClass())).handle(event, context);
+			return ((EventHandler<T, C>)handler(event.getClass(), context.getClass())).handle(event, context);
 		}
 		catch (ClassCastException | NullPointerException ex)
 		{
 			//System.err.println("No event handler found for " + event.getClass() + " or invalid context " + context.getClass() + "[" + ex.getClass() + "]");
+			return false;
 		}
 		catch (Exception ex)
 		{
 			ex.printStackTrace();
+			return false;
 		}
 	}
 	
-	public <T extends Event, C> EventChain<T, C> chain(Class<T> c, Class<C> t)
+	public static <T extends Event, C> EventChain<T, C> chain(Class<T> c, Class<C> t)
 	{
 		return (EventChain<T, C>)handler(c, t);
 	}
 	
-	@SuppressWarnings("unchecked")
-	public <T extends Event, C> EventHandler<T, C> handler(Class<T> c, Class<C> t)
+	public static <T extends Event, C> EventHandler<T, C> handler(Class<T> c, Class<C> t)
 	{
 		return (EventHandler<T, C>)handlers.get(c);
 	}

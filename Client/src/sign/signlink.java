@@ -160,7 +160,10 @@ public final class signlink
 				}
 				File file1 = new File(s1 + s);
 				if(file1.exists() || file1.mkdir())
+				{
+					System.out.println(s1);
 					return s1 + s + "/";
+				}
 			}
 			catch(Exception _ex) { }
 	 

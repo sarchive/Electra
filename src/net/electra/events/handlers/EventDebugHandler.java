@@ -9,7 +9,7 @@ import net.electra.events.EventHandler;
 public final class EventDebugHandler extends EventHandler<Event, Object>
 {
 	@Override
-	public void handle(Event event, Object context)
+	public boolean handle(Event event, Object context)
 	{
 		System.out.println("[" + event.getClass().getSimpleName() + "->" + context.getClass().getSimpleName() + "]");
 		
@@ -46,5 +46,7 @@ public final class EventDebugHandler extends EventHandler<Event, Object>
 		{
 			ex.printStackTrace();
 		}
+		
+		return true;
 	}
 }
